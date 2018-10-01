@@ -1,3 +1,14 @@
+# Extra from me
+*.db
+*.dll
+*.avi
+*.mp4
+*.tif
+*.bin
+/externals/*
+/.vs/*
+*.def
+
 # Prerequisites
 *.d
 

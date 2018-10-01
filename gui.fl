@@ -1,0 +1,47 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0304
+header_name {.h}
+code_name {.cxx}
+class GUI {open
+} {
+  decl {\#include "scene.h"} {private local
+  }
+  Function {GUI()} {open
+  } {
+    Fl_Window uiw {
+      label GUI open
+      xywh {46 65 199 94} type Double labeltype NORMAL_LABEL hide
+    } {
+      Fl_Button {} {
+        label {Pt 1 demo}
+        callback {DBG_cb()}
+        tooltip {Generates demonstrations of all required functionality.} xywh {10 50 80 35} selection_color 72
+      }
+      Fl_Button {} {
+        label {Save Video}
+        callback {Save_cb()}
+        tooltip {Saves the video under provided name to the mydbg dir.} xywh {95 50 95 35}
+      }
+      Fl_Input savepath {
+        label {Video name:} selected
+        xywh {95 10 95 35} labeltype SHADOW_LABEL
+      }
+    }
+  }
+  Function {} {open
+  } {
+    code {scene = new Scene;} {}
+  }
+  Function {show()} {open
+  } {
+    code {uiw->show();} {}
+  }
+  Function {DBG_cb()} {open
+  } {
+    code {scene->DBG();} {}
+  }
+  Function {Save_cb()} {open
+  } {
+    code {scene->Save();} {}
+  }
+}
