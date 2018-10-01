@@ -8,6 +8,7 @@
 /externals/*
 /.vs/*
 *.def
+/x64/*
 
 # Prerequisites
 *.d

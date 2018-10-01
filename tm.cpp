@@ -78,7 +78,7 @@ void TriangleMesh::renderFill(PPC *ppc, FrameBuffer *fb) {
 
 }
 
-void TriangleMesh::renderFillClip(PPC *ppc, FrameBuffer *fb) {
+/*void TriangleMesh::renderFillClip(PPC *ppc, FrameBuffer *fb) {
 	V3 pverts[];
 	for (int tri = 0; tri < trisN; tri++) {
 	unsigned int viz[3] = { tris[3 * tri], tris[3 * tri + 1] , tris[3 * tri + 2] };
@@ -109,7 +109,7 @@ void TriangleMesh::renderFillClip(PPC *ppc, FrameBuffer *fb) {
 
 	unsigned int tc = colors[viz[0]].getColor();
 	float tz = pverts[viz[0]][2];
-}
+}*/
 
 AABB TriangleMesh::getBoundingBox() {
 	if (!verts)
