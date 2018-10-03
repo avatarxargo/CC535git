@@ -22,10 +22,10 @@ Scene::Scene() {
 	int h = 720;
 
 	camera = new PPC(60, w, h);
-	camera->pos = camera->pos + V3(0, 0, 0);
+	camera->pos = camera->pos + V3(0, 50, 0);
 	cam1 = new PPC(60, w, h);
 	cam2 = new PPC(60, w, h);
-	vizcam = new PPC(60, w, h);
+	vizcam = new PPC(60, w, h)			;
 
 	tm1 = new TriangleMesh();
 	tm2 = new TriangleMesh();
@@ -291,12 +291,29 @@ void Scene::cameraControl() {
 	}
 }
 
-
+float ypos = 0;
+float yspd = 0;
+float jumpspd = 80;
+float gravity = -10;
+bool grounded = true;
 void Scene::cameraControlFPS() {
 	float spd = 25;
 	float tspd = 1;
 	float zoomspd = 50;
-	camera->translateFlat(V3(fb->getYin()*spd, fb->getXin()*spd, fb->getZin()*spd));
+	camera->translateFlat(V3(fb->getYin()*spd, fb->getXin()*spd, 0));
+	if (grounded && fb->getZin()*spd > 0) {
+		grounded = false;
+		yspd = jumpspd;
+		ypos = 0;
+	}
+	yspd += gravity;
+	ypos += yspd;
+	if (ypos < 0) {
+		grounded = true;
+		ypos = 0;
+		yspd = 0;
+	}
+	camera->pos[1] = ypos+50;
 
 	float tmp = fb->getJin()*tspd;
 	if (tmp != 0) {
