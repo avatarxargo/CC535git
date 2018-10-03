@@ -19,6 +19,7 @@
 	AABB boundingBox;
 	int vertsN;
 	unsigned int *tris;
+	float *tcs;
 	int trisN;
 	//
 	float currentScale;
@@ -38,6 +39,7 @@
 	void renderPoints(PPC *ppc, FrameBuffer *fb);
 	void renderWireframe(PPC *ppc, FrameBuffer *fb);
 	void renderFill(PPC *ppc, FrameBuffer *fb);
+	void renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture *tex);
 	void renderFillClip(PPC *ppc, FrameBuffer *fb);
 	//
 	void SetRectangle(V3 O, float rw, float rh);

@@ -144,10 +144,10 @@ void FrameBuffer::KeyboardHandle() {
 		input2(-1, 0, 0, 0);
 		break;
 	case 'j':
-		input2(0,-1, 0, 0);
+		input2(0, -1, 0, 0);
 		break;
 	case 'l':
-		input2(0,1, 0, 0);
+		input2(0, 1, 0, 0);
 		break;
 	case 'u':
 		input2(0, 0, -1, 0);
@@ -200,6 +200,20 @@ void FrameBuffer::setZ(int u, int v, float z, unsigned int colour) {
 	if (zbuffer[idx] >= z) {
 		zbuffer[idx] = z;
 		pix[idx] = colour;
+	}
+}
+
+void FrameBuffer::setZBlend(int u, int v, float z, unsigned int colour, float alpha) {
+	if (alpha <= 0) { return; }
+	int idx = u + (h - 1 - v) * w;
+	if (zbuffer[idx] >= z) {
+		zbuffer[idx] = z;
+		//
+		V3 myc(pix[idx]);
+		V3 newc(colour);
+		if (alpha > 1) alpha = 1;
+		myc = myc * (1 - alpha) + newc * alpha;
+		pix[idx] = myc.getColor();
 	}
 }
 
@@ -317,10 +331,10 @@ void FrameBuffer::draw3DTriangle(V3 point1, V3 color1, V3 point2, V3 color2, V3 
 	int vi2 = floorf(pp3[1] + 0.5);
 
 	//clamping
-	int umin = fminf(ui2, fminf(ui0, ui1))-1;
-	int vmin = fminf(vi2, fminf(vi0, vi1))-1;
-	int umax = fmaxf(ui2, fmaxf(ui0, ui1))+1;
-	int vmax = fmaxf(vi2, fmaxf(vi0, vi1))+1;
+	int umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	int vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	int umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	int vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
 	if (umin < 0) { umin = 0; }
 	if (vmin < 0) { vmin = 0; }
 	if (umax > w - 1) { umax = w - 1; }
@@ -346,9 +360,157 @@ void FrameBuffer::draw3DTriangle(V3 point1, V3 color1, V3 point2, V3 color2, V3 
 						((pp2[1] - pp3[1])*(pp1[0] - pp3[0]) + (pp3[0] - pp2[0])*(pp1[1] - pp3[1]));
 				float W3 = 1 - W1 - W2;*/
 				//
-				float z = pp1[2]*W1 + pp2[2]*W2 + pp3[2]*W3;
+				float z = pp1[2] * W1 + pp2[2] * W2 + pp3[2] * W3;
 				V3 col = color1 * W1 + color2 * W2 + color3 * W3;
 				setZ(u, v, z, col.getColor());
+			}
+		}
+	}
+}
+
+void FrameBuffer::draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex) {
+	V3 pp1, pp2, pp3;
+	if (!camera->project(point1, pp1))
+		return;
+	if (!camera->project(point2, pp2))
+		return;
+	if (!camera->project(point3, pp3))
+		return;
+
+	//round to int
+	int ui0 = floorf(pp1[0] + 0.5);
+	int vi0 = floorf(pp1[1] + 0.5);
+	int ui1 = floorf(pp2[0] + 0.5);
+	int vi1 = floorf(pp2[1] + 0.5);
+	int ui2 = floorf(pp3[0] + 0.5);
+	int vi2 = floorf(pp3[1] + 0.5);
+
+	//clamping
+	int umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	int vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	int umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	int vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
+	if (umin < 0) { umin = 0; }
+	if (vmin < 0) { vmin = 0; }
+	if (umax > w - 1) { umax = w - 1; }
+	if (vmax > h - 1) { vmax = h - 1; }
+
+	//render using Barycentric Coordinates
+	for (int u = umin; u < umax; ++u) {
+		for (int v = vmin; v < vmax; ++v) {
+			float W1 = ((pp2[1] - pp3[1])*(u - pp3[0]) + (pp3[0] - pp2[0])*(v - pp3[1])) /
+				((pp2[1] - pp3[1])*(pp1[0] - pp3[0]) + (pp3[0] - pp2[0])*(pp1[1] - pp3[1]));
+			float W2 = ((pp3[1] - pp1[1])*(u - pp3[0]) + (pp1[0] - pp3[0])*(v - pp3[1])) /
+				((pp2[1] - pp3[1])*(pp1[0] - pp3[0]) + (pp3[0] - pp2[0])*(pp1[1] - pp3[1]));
+			float W3 = 1 - W1 - W2;
+			if (W1 >= 0 && W2 >= 0 && W3 >= 0) {
+				float z = pp1[2] * W1 + pp2[2] * W2 + pp3[2] * W3;
+				V3 uvw = uvw1 * W1 + uvw2 * W2 + uvw3 * W3;
+				unsigned int col = tex->getColorNearest(uvw[0], uvw[1]);
+				setZ(u, v, z, col);
+			}
+		}
+	}
+}
+
+void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex) {
+	V3 pp1, pp2, pp3;
+	if (!camera->project(point1, pp1))
+		return;
+	if (!camera->project(point2, pp2))
+		return;
+	if (!camera->project(point3, pp3))
+		return;
+
+	//round to int
+	int ui0 = floorf(pp1[0] + 0.5);
+	int vi0 = floorf(pp1[1] + 0.5);
+	int ui1 = floorf(pp2[0] + 0.5);
+	int vi1 = floorf(pp2[1] + 0.5);
+	int ui2 = floorf(pp3[0] + 0.5);
+	int vi2 = floorf(pp3[1] + 0.5);
+
+	//clamping
+	int umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	int vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	int umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	int vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
+	if (umin < 0) { umin = 0; }
+	if (vmin < 0) { vmin = 0; }
+	if (umax > w - 1) { umax = w - 1; }
+	if (vmax > h - 1) { vmax = h - 1; }
+
+	V3 a = camera->horizontal;
+	V3 b = camera->vertical;
+	V3 c = camera->topleft;
+	V3 v1 = point1;
+	V3 v2 = point2;
+	V3 v3 = point3;
+	V3 C = camera->pos;
+	M33 abc(a,b,c);
+	abc = abc.transpose();
+	M33 q = M33(v1-C,v2-C,v3-C).transpose();
+	M33 qinv;
+	if (!q.inverse(&qinv))
+		return;
+	q = qinv*abc;
+	//cerr << "q:\n" << q << "\n";
+	//
+	V3 uvw1to2 = uvw2 - uvw1;
+	V3 uvw1to3 = uvw3 - uvw1;
+	float z1to2 = v2[2] - v1[2];
+	float z1to3 = v3[2] - v1[2];
+
+	bool opaque = tex->isOpaque();
+
+	//render using Model Space Coordinates
+	for (int u = umin; u < umax; ++u) {
+		for (int v = vmin; v < vmax; ++v) {
+			int side1 = u * (vi1 - vi0) - v * (ui1 - ui0) - ui0 * vi1 + vi0 * ui1; //0 1
+			int side2 = u * (vi2 - vi1) - v * (ui2 - ui1) - ui1 * vi2 + vi1 * ui2; //1 2
+			int side3 = u * (vi0 - vi2) - v * (ui0 - ui2) - ui2 * vi0 + vi2 * ui0; //2 0 
+			if (side1 < 0 || side2 < 0 || side3 < 0)
+				continue;
+			V3 uv1 = V3(u, v, 1);
+			V3 quv1 = (q * uv1);
+			float w = (quv1[0] + quv1[1] + quv1[2]);
+			if (w*w < 0.00001) { continue; }
+			//1-k-l = kl[0], k = kl[1], l = kl[2]
+			V3 kl = quv1 / w;
+			//V3 localCoord = uvw1 + uvw1to2 * kl[1] + uvw1to3 * kl[2];
+			V3 localCoord = uvw1 * kl[0] + uvw2 * kl[1] + uvw3 * kl[2];
+			unsigned int col = tex->getColor(localCoord[0], localCoord[1]);
+			if (opaque) {
+				setZ(u, v, 1 / w, col);
+			} else {
+				float alpha = tex->getOpacityNearest(localCoord[0], localCoord[1]);
+				setZBlend(u, v, 1 / w, col, alpha);
+			}
+		}
+	}
+
+	/*float z = pp1[2] * W1 + pp2[2] * W2 + pp3[2] * W3;
+	V3 uvw = uvw1 * W1 + uvw2 * W2 + uvw3 * W3;
+	unsigned int col = tex->getColorNearest(uvw[0], uvw[1]);
+	setZ(u, v, z, col);*/
+}
+
+
+void FrameBuffer::fog(float start, float end, V3 color) {
+	unsigned int col = color.getColor();
+	for (int i = 0; i < h; ++i) {
+		for (int j = 0; j < w; ++j) {
+			float z = zbuffer[i*w + j];
+			if (z < start) {
+				continue;
+			} else if (z > end) {
+				pix[i*w + j] = col;
+				continue;
+			} else {
+				float rate = (z - start) / (end - start);
+				V3 myc(pix[i*w + j]);
+				myc = myc * (1 - rate) + color * rate;
+				pix[i*w + j] = myc.getColor();
 			}
 		}
 	}
@@ -362,8 +524,8 @@ V3 FrameBuffer::clampVector(V3 v0) {
 	V3 v1(v0);
 	if (v1[0] < 0) { v1[0] = 0; }
 	if (v1[1] < 0) { v1[1] = 0; }
-	if (v1[0] > w-1) { v1[0] = w-1; }
-	if (v1[1] > h-1) { v1[1] = h-1; }
+	if (v1[0] > w - 1) { v1[0] = w - 1; }
+	if (v1[1] > h - 1) { v1[1] = h - 1; }
 	return v1;
 }
 
@@ -374,13 +536,13 @@ void FrameBuffer::drawSegment(V3 v0, V3 c0, V3 v1, V3 c1) {
 	int steps = iabsi(diff[0]);
 	steps = steps > iabsi(diff[1]) ? steps : iabsi(diff[1]);
 	diff = diff / (float)steps;
-	V3 cdiff = (c1 - c0)/(float)steps;
+	V3 cdiff = (c1 - c0) / (float)steps;
 	int ui, vi;
 	for (int i = 0; i < steps; ++i) {
 		ui = floorf(v0c[0] + diff[0] * i + 0.5);
 		vi = floorf(v0c[1] + diff[1] * i + 0.5f);
 		//Set(ui, vi, V3(1, 0, 0).getColor());//(c0 + cdiff).getColor()
-		Set(v0c[0]+diff[0]*i, v0c[1] + diff[1]*i, (c0 + cdiff*i).getColor());//
+		Set(v0c[0] + diff[0] * i, v0c[1] + diff[1] * i, (c0 + cdiff * i).getColor());//
 	}
 }
 
@@ -419,7 +581,7 @@ void FrameBuffer::DrawSegment(V3 p0, V3 c0, V3 p1, V3 c1) {
 
 }
 
-void FrameBuffer::draw3DPoint(V3 point, V3 color, PPC* ppc, int size){
+void FrameBuffer::draw3DPoint(V3 point, V3 color, PPC* ppc, int size) {
 	V3 pp;
 	if (!ppc->project(point, pp))
 		return;

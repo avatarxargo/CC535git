@@ -103,11 +103,14 @@
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="m33.h" />
     <ClInclude Include="objLoader.h" />
+    <ClInclude Include="plane.h" />
     <ClInclude Include="ppc.h" />
     <ClInclude Include="quat.h" />
     <ClInclude Include="scene.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="tm.h" />
     <ClInclude Include="v3.h" />
     <ClInclude Include="videoSaver.h" />
@@ -118,9 +121,11 @@
     <ClCompile Include="gui.cxx" />
     <ClCompile Include="m33.cpp" />
     <ClCompile Include="objLoader.cpp" />
+    <ClCompile Include="plane.cpp" />
     <ClCompile Include="ppc.cpp" />
     <ClCompile Include="quat.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="tm.cpp" />
     <ClCompile Include="v3.cpp" />
     <ClCompile Include="videoSaver.cpp" />

@@ -74,11 +74,12 @@ void PPC::translate(V3 trans) {
 }
 
 int PPC::project(V3 p, V3& pp) {
-	M33 m;
+	M33 m, minv;
 	m = m.setColumn(0, horizontal);
 	m = m.setColumn(1, vertical);
 	m = m.setColumn(2, topleft);
-	V3 q = m.inverse()*(p - pos);
+	m.inverse(&minv);
+	V3 q = minv*(p - pos);
 	if (q[2] < 0.0f)
 	{
 		//cerr << "not projected:" << q[2] << " [" << p << "]" << endl;

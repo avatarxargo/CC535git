@@ -115,8 +115,9 @@ V3 V3::pointRotate(V3 axisOrigin, V3 axisDir, float angle) {
 	rotationMatrix.setAsRotationX(angle);
 	v1 = rotationMatrix * v1;
 	//project back to initial coordinates
-	projectionMatrix = projectionMatrix.inverse();
-	v1 = projectionMatrix * v1;
+	M33 projectionMatrixInv;
+	projectionMatrix.inverse(&projectionMatrixInv);
+	v1 = projectionMatrixInv * v1;
 	//shift back
 	v1 = v1 + axisOrigin;
 	return v1;

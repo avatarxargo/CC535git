@@ -33,10 +33,11 @@ Scene::Scene() {
 	tm4 = new TriangleMesh();
 	tm5 = new TriangleMesh();
 	tm1->LoadBin("geometry/teapot1K.bin");
+	tm1->scale(50);
 	tm1->translate(V3(0,0,-200));
 	tm2->LoadBin("geometry/teapot1K.bin");
 	tm1->translate(V3(-300, 0, -200));
-	tm3->LoadBin("geometry/bunny.bin");
+	tm3->LoadBin("geometry/happy4.bin");
 	tm3->translate(V3(0, 50, -400));
 	tm3->scale(600);
 	tm4->LoadBin("geometry/happy4.bin");
@@ -49,20 +50,35 @@ Scene::Scene() {
 	tm4->position(V3(100, 50, -250), 250);
 	tm5->position(V3(-300, -250, -0), 1500);
 
+	rikako = new Texture("geometry/rikako.tif");
+	rikako->loadTiffTransparency("geometry/rikako_opacity.tif");
+	cerr << "opque:" << rikako->isOpaque();
+	yumemi = new Texture("geometry/yumemi.tif");
+	mesh = new Texture("geometry/mesh.tif");
+	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
+	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
+	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
+	p1b = new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
+	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
+		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
+		cerr << mesh->clampCoordinate(f) << endl;
+	}*/
+
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
 	fb->show();
 
-	subfb = new FrameBuffer(u0, v0, w, h);
-	subfb->label("SW Cam 0");
-	subfb->show();
-
+	if (vizcamena) {
+		subfb = new FrameBuffer(u0, v0, w, h);
+		subfb->label("SW Cam 0");
+		subfb->show();
+		subfb->refreshColor(0xFF000000);
+	}
 	cerr << "To use Camera Control:\n1. hit \"Pt 1 Demo\"\n2. use AWSDQE for translation\n3. use IJKLUO to pan, tilt and roll\nuse P; to change the focal length\n";
 
 	gui->uiw->position(u0, v0 + fb->h + 60);
 
 	fb->refreshColor(0xFF000000);
-	subfb->refreshColor(0xFF000000);
 	Render();
 
 }
@@ -88,11 +104,6 @@ void updateLoop(Scene& scn, FrameBuffer* fb)
 }
 
 void Scene::Render() {
-
-
-	subfb->refreshColor(0xFF000000);
-	subfb->refreshDepth(5000);
-
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
 
@@ -114,27 +125,36 @@ void Scene::Render() {
 	//fb->drawCircle(pos[0], pos[1], 5, 0xFF9999AA);
 	//fb->DrawSegment(V3(-200, 200, 0), V3(1, 0, 0), V3(300, 300, 0), V3(0, 1, 0));
 	//tm1->renderWireframe(camera, fb);
-	tm1->renderFill(camera, fb);
-	//tm2->renderWireframe(camera, fb);
-	//tm3->renderWireframe(camera, fb);
-	tm4->renderFill(camera, fb);
+	tm1->renderFillTextured(camera, fb, rikako);
+	tm2->renderFillTextured(camera, fb, rikako);
+	tm3->renderFillTextured(camera, fb, rikako);
+	tm4->renderFillTextured(camera, fb, rikako);
 	tm1->getBoundingBox().render(camera, fb);
 	tm4->getBoundingBox().render(camera, fb);
-	//tm5->renderFill(camera, fb);
-
-
-	tm1->renderFill(vizcam, subfb);
-	tm4->renderFill(vizcam, subfb);
-	tm1->getBoundingBox().render(vizcam, subfb);
-	tm4->getBoundingBox().render(vizcam, subfb);
+	//tm5->renderFillTextured(camera, fb, rikako);
+	p0->draw(camera, fb);
+	p1->draw(camera, fb);
+	p0b->drawScreenspace(camera, fb);
+	p1b->drawScreenspace(camera, fb);
 
 	//grid
 	drawGrid();
 
-	vizcam->visualize(camera, fb, subfb);
-	
+	if (vizcamena) {
+		subfb->refreshColor(0xFF000000);
+		subfb->refreshDepth(5000);
+		tm1->renderFill(vizcam, subfb);
+		tm4->renderFill(vizcam, subfb);
+		tm1->getBoundingBox().render(vizcam, subfb);
+		tm4->getBoundingBox().render(vizcam, subfb);
+		p0->draw(vizcam, subfb);
+		p1->drawuv(vizcam, subfb);
+		vizcam->visualize(camera, fb, subfb);
+		subfb->redraw();
+	}
+	   	 	
+	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
 	fb->redraw();
-	subfb->redraw();
 	Fl::check();
 }
 
@@ -170,8 +190,10 @@ void Scene::drawGrid() {
 			//fb
 			fb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - (j + 1) * step, 0, start - i * step), col, camera);
 			fb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - j * step, 0, start - (i + 1) * step), col, camera);
-			subfb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - (j + 1) * step, 0, start - i * step), col, vizcam);
-			subfb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - j * step, 0, start - (i + 1) * step), col, vizcam);
+			if (vizcamena) {
+				subfb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - (j + 1) * step, 0, start - i * step), col, vizcam);
+				subfb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - j * step, 0, start - (i + 1) * step), col, vizcam);
+			}
 		}
 	}
 }
@@ -327,7 +349,9 @@ void Scene::DBG() {
 	cerr << "m1 getColumn(2)\n" << m1.getColumn(2) << endl;
 	cerr << "m1 transpose\n" << m1.transpose() << endl;
 	cerr << "m1 set column 1 to (2,2,2)\n" << m1.setColumn(1, V3(2, 2, 2)) << endl;
-	cerr << "inverse of m3:\n" << m3.inverse() << endl;
+	M33* m3inv = new M33();
+	m3.inverse(m3inv);
+	cerr << "inverse of m3:\n" << m3inv << endl;
 
 	V3 origin = V3(100, 50, 0);
 	V3 dir = V3(0, 0.5f, 1);

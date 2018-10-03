@@ -56,16 +56,16 @@ M33 M33::transpose() {
 	return M33(getColumn(0), getColumn(1), getColumn(2));
 }
 
-M33 M33::inverse() {
+bool M33::inverse(M33 * m1in) {
 	M33 &m0 = *this;
-	M33 m1 = M33();
+	M33 &m1 = *m1in;
 	float determinant = 0;
 	for (int i = 0; i < 3; i++) {
 		determinant += (m0[0][i] * (m0[1][(i + 1) % 3] * m0[2][(i + 2) % 3] - m0[1][(i + 2) % 3] * m0[2][(i + 1) % 3]));
 	}
 	if (determinant == 0) {
-		cerr << "Matrix: \n" << m0 << "\nis singular! No inverse possible." << endl;
-		return m1;
+		//cerr << "Matrix: \n" << m0 << "\nis singular! No inverse possible." << endl;
+		return false;
 	}
 	//inverse
 	for (int i = 0; i < 3; i++) {
@@ -73,7 +73,7 @@ M33 M33::inverse() {
 			m1[i][j] = ((m0[(j + 1) % 3][(i + 1) % 3] * m0[(j + 2) % 3][(i + 2) % 3]) - (m0[(j + 1) % 3][(i + 2) % 3] * m0[(j + 2) % 3][(i + 1) % 3])) / determinant;
 		}
 	}
-	return m1;
+	return true;
 }
 
 ostream & operator<<(ostream & os, M33 m) {

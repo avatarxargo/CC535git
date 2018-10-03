@@ -5,7 +5,9 @@
 #include <GL/glut.h>
 
 #include "v3.h"
+#include "m33.h"
 #include "ppc.h"
+#include "texture.h"
 
 class FrameBuffer : public Fl_Gl_Window {
 public:
@@ -27,6 +29,7 @@ public:
 	void drawSegment(V3 v0, V3 c0, V3 v1, V3 c1);
 	void Set(int u, int v, unsigned int bgr);
 	void setZ(int u, int v, float z, unsigned int colour);
+	void setZBlend(int u, int v, float z, unsigned int colour, float alpha);
 	void drawRect(float u0, float v0, float u1, float v1, unsigned int bgr);
 	void drawTriangle(float u0, float v0, float u1, float v1, float u2, float v2, unsigned int bgr);
 	void drawCircle(float u, float v, float r, unsigned int bgr);
@@ -41,7 +44,10 @@ public:
 	void draw3DPoint(V3 point, V3 color, PPC* camera, int size);
 	void draw3DSegment(V3 point1, V3 color1, V3 point2, V3 color2, PPC* camera);
 	void draw3DTriangle(V3 point1, V3 color1, V3 point2, V3 color2, V3 point3, V3 color3, PPC* camera);
+	void draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex);
+	void draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex);
 	//
+	void fog(float start, float end, V3 color);
 	void input(int x, int y, int z);
 	void input2(int i, int j, int u, int p);
 	int getXin();

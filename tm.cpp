@@ -78,6 +78,24 @@ void TriangleMesh::renderFill(PPC *ppc, FrameBuffer *fb) {
 
 }
 
+void TriangleMesh::renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture * tex) {
+	if (!tcs) {
+		renderFill(ppc, fb);
+		return;
+	}
+	for (int tri = 0; tri < trisN; tri++) {
+		int vi0 = tris[3 * tri];
+		int vi1 = tris[3 * tri + 1];
+		int vi2 = tris[3 * tri + 2];
+		V3 c0 = V3(tcs[vi0 * 2], tcs[vi0 * 2 + 1], 0);
+		V3 c1 = V3(tcs[vi1 * 2], tcs[vi1 * 2 + 1], 0);
+		V3 c2 = V3(tcs[vi2 * 2], tcs[vi2 * 2 + 1], 0);
+		//fb->draw3DTriangleTextured(verts[vi0], c0, verts[vi1], c1, verts[vi2], c2, ppc, tex);
+		fb->draw3DTriangle(verts[vi0], c0, verts[vi1], c1, verts[vi2], c2, ppc);
+	}
+
+}
+
 /*void TriangleMesh::renderFillClip(PPC *ppc, FrameBuffer *fb) {
 	V3 pverts[];
 	for (int tri = 0; tri < trisN; tri++) {
@@ -181,7 +199,7 @@ void TriangleMesh::LoadBin(char *fname) {
 	}
 
 	ifs.read(&yn, 1); // texture coordinates 2 floats
-	float *tcs = 0; // don't have texture coordinates for now
+	//float *tcs = 0; // don't have texture coordinates for now
 	if (tcs)
 		delete tcs;
 	tcs = 0;
@@ -212,6 +230,6 @@ void TriangleMesh::LoadBin(char *fname) {
 	cerr << "INFO: loaded " << vertsN << " verts, " << trisN << " tris from " << endl << "      " << fname << endl;
 	cerr << "      xyz " << ((colors) ? "rgb " : "") << ((normals) ? "nxnynz " : "") << ((tcs) ? "tcstct " : "") << endl;
 
-	delete[]tcs;
+	//delete[]tcs;
 
 }

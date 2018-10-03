@@ -15,7 +15,7 @@ public:
 	//M * v multiplied by vector from the right
 	V3 operator*(V3 v0);
 	M33 operator*(M33 m1);
-	M33 inverse();
+	bool inverse(M33 * m1);
 	M33 transpose();
 	void setAsRotationX(float degrees);
 	void setAsRotationY(float degrees);

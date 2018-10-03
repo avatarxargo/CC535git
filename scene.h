@@ -5,6 +5,7 @@
 #include "tm.h"
 #include "framebuffer.h"
 #include "videoSaver.h"
+#include "plane.h"
 //Still broken... no documentation for their stupid library.
 //#include "VideoCapturePlus.h"
 #include <fstream>
@@ -18,7 +19,10 @@ public:
 	FrameBuffer *fb, *subfb;
 	PPC *camera, *cam1, *cam2, *vizcam;
 	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5;
+	Plane *p0, *p1, *p0b, *p1b;
+	Texture *rikako, *yumemi, *mesh;
 	Scene();
+	bool vizcamena = false;
 	void DBG();
 	void Save();
 	void Render();
