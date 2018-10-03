@@ -43,7 +43,7 @@ public:
 	float getFocalLength();
 	void setTo(PPC ppc);
 	void lookAt(V3 target);
-	void visualize(PPC* viewer, FrameBuffer* canvas);
+	void visualize(PPC* viewer, FrameBuffer* canvas, FrameBuffer* view);
 	V3 up();
 	V3 forward();
 	void postitionAndOrient(V3 C1, V3 L1, V3 vpv);

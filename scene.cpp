@@ -53,11 +53,16 @@ Scene::Scene() {
 	fb->label("SW Framebuffer");
 	fb->show();
 
+	subfb = new FrameBuffer(u0, v0, w, h);
+	subfb->label("SW Cam 0");
+	subfb->show();
+
 	cerr << "To use Camera Control:\n1. hit \"Pt 1 Demo\"\n2. use AWSDQE for translation\n3. use IJKLUO to pan, tilt and roll\nuse P; to change the focal length\n";
 
 	gui->uiw->position(u0, v0 + fb->h + 60);
 
 	fb->refreshColor(0xFF000000);
+	subfb->refreshColor(0xFF000000);
 	Render();
 
 }
@@ -83,6 +88,10 @@ void updateLoop(Scene& scn, FrameBuffer* fb)
 }
 
 void Scene::Render() {
+
+
+	subfb->refreshColor(0xFF000000);
+	subfb->refreshDepth(5000);
 
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
@@ -113,12 +122,19 @@ void Scene::Render() {
 	tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFill(camera, fb);
 
-	vizcam->visualize(camera, fb);
+
+	tm1->renderFill(vizcam, subfb);
+	tm4->renderFill(vizcam, subfb);
+	tm1->getBoundingBox().render(vizcam, subfb);
+	tm4->getBoundingBox().render(vizcam, subfb);
 
 	//grid
 	drawGrid();
 
+	vizcam->visualize(camera, fb, subfb);
+	
 	fb->redraw();
+	subfb->redraw();
 	Fl::check();
 }
 
@@ -154,6 +170,8 @@ void Scene::drawGrid() {
 			//fb
 			fb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - (j + 1) * step, 0, start - i * step), col, camera);
 			fb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - j * step, 0, start - (i + 1) * step), col, camera);
+			subfb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - (j + 1) * step, 0, start - i * step), col, vizcam);
+			subfb->draw3DSegment(V3(start - j * step, 0, start - i * step), col, V3(start - j * step, 0, start - (i + 1) * step), col, vizcam);
 		}
 	}
 }

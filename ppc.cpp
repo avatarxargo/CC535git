@@ -140,7 +140,7 @@ void PPC::interpolate(PPC* target, PPC* set, float rate) {
 //
 //}
 
-void PPC::visualize(PPC* viewer, FrameBuffer* canvas) {
+void PPC::visualize(PPC* viewer, FrameBuffer* canvas, FrameBuffer* view) {
 	float scale = 0.1;
 	V3 topv = pos + topleft * scale;
 	//frame
@@ -153,17 +153,18 @@ void PPC::visualize(PPC* viewer, FrameBuffer* canvas) {
 	canvas->draw3DSegment(topv + horizontal * w * scale, V3(1, 1, 0), topv + (horizontal * w + vertical * h) * scale, V3(1, 1, 0), viewer);
 	canvas->draw3DSegment(topv + vertical * h * scale, V3(1, 1, 0), topv + (horizontal * w + vertical * h)  * scale, V3(1, 1, 0), viewer);
 	//canvas
-	unsigned int* data = canvas->getDataPtr();
-	float resscl = 0.1;
-	int lenw =  canvas->w*resscl;
-	int lenh =  canvas->h*resscl;
+	unsigned int* data = view->getDataPtr();
+	int scl = 4;
+	float resscl = 1/(float)scl;
+	int lenw = view->w*resscl;
+	int lenh = view->h*resscl;
 	for (int y = 0; y < lenh; ++y) {
 		for (int x = 0; x < lenw; ++x) {
-			int idx = y * lenw + x;
+			int idx = ((lenh-y-1) * lenw *scl + x)*scl;
 			V3 color = V3(data[idx]);//V3(1, 0, 0);/ 
 			V3 ppos = horizontal * w * scale * (x / (float)lenw)
 					+ vertical * h * scale * (y / (float)lenh);
-			//canvas->draw3DPoint(topv+ppos,color,viewer,1);
+			//canvas->draw3DPoint(topv+ppos,color,viewer,10);
 			canvas->draw3DSegment(topv + ppos, color, topv + ppos + V3(1, 1, 1), color, viewer);
 		}
 	}

@@ -15,7 +15,7 @@ class Scene {
 public:
 	
 	GUI *gui;
-	FrameBuffer *fb;
+	FrameBuffer *fb, *subfb;
 	PPC *camera, *cam1, *cam2, *vizcam;
 	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5;
 	Scene();
