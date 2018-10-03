@@ -85,6 +85,7 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	Render();
 
+	DBG();
 }
 
 V3 pos = V3(1, -1, -10);
@@ -245,7 +246,7 @@ void Scene::cinematicCamera(bool save) {
 			cam1->interpolate(cam2, vizcam, 0);
 
 		animateScene();
-		cameraControl();
+		cameraControlFPS();
 
 		Render();
 		Fl::check();
@@ -290,6 +291,38 @@ void Scene::cameraControl() {
 	}
 }
 
+
+void Scene::cameraControlFPS() {
+	float spd = 25;
+	float tspd = 1;
+	float zoomspd = 50;
+	camera->translateFlat(V3(fb->getYin()*spd, fb->getXin()*spd, fb->getZin()*spd));
+
+	float tmp = fb->getJin()*tspd;
+	if (tmp != 0) {
+		camera->panFlat(-tmp,V3(0,1,0));
+	}
+	tmp = fb->getIin()*tspd;
+	if (tmp != 0) {
+		camera->tilt(tmp);
+	}
+	tmp = fb->getUin()*tspd;
+	if (tmp != 0) {
+		camera->roll(-tmp);
+	}
+	tmp = fb->getPin()*zoomspd;
+	if (tmp != 0) {
+		camera->changeFocalLength(tmp);
+	}
+	//
+	if (fb->getPrintCam()) {
+		camera->saveToFile("mydbg/cameraInfo.txt");
+	}
+	if (fb->getLoadCam()) {
+		camera->loadFromFile("mydbg/cameraInfo.txt");
+	}
+}
+
 void Scene::DBG() {
 	//Scene &me = *this;
 	//std::thread updloop(updateLoop, me, fb);
@@ -304,7 +337,7 @@ void Scene::DBG() {
 	while(true) {
 
 		//move camera
-		cameraControl();
+		cameraControlFPS();
 		//animate scene
 		animateScene();
 

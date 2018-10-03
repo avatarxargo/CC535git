@@ -25,8 +25,10 @@ public:
 	PPC(V3 _hor, V3 _ver, V3 _tl, V3 _pos);
 	//X, Y, Z in the camera coordinates
 	void translate(V3 translation);
+	void translateFlat(V3 translation);
 	//pan, tilt, roll
 	void pan(float degrees);
+	void panFlat(float degrees, V3 normal);
 	void tilt(float tilt);
 	void roll(float tilt);
 	void changeFocalLength(float units);

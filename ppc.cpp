@@ -45,6 +45,17 @@ void PPC::pan(float angle) {
 	topleft = tl2;
 }
 
+void PPC::panFlat(float angle, V3 normal) {
+	V3 axis = normal;
+	V3 hor2 = horizontal.vectorRotate(axis, angle);
+	V3 ver2 = vertical.vectorRotate(axis, angle);
+	V3 tl2 = topleft.vectorRotate(axis, angle);
+	//
+	horizontal = hor2;
+	vertical = ver2;
+	topleft = tl2;
+}
+
 void PPC::tilt(float angle) {
 	V3 axis = horizontal;
 	V3 hor2 = horizontal.vectorRotate(axis, angle);
@@ -71,6 +82,14 @@ void PPC::translate(V3 trans) {
 	pos = pos + (horizontal%vertical).norm()*trans[2]
 		+ (vertical*-1).norm()*trans[1]
 		+ (horizontal).norm()*trans[0];
+}
+void PPC::translateFlat(V3 trans) {
+	V3 f = forward();
+	f[1] = 0;
+	f = f.norm();
+	pos = pos + f * trans[0]
+		+ (vertical*-1)%f.norm()*trans[2]
+		+ (horizontal).norm()*trans[1];
 }
 
 int PPC::project(V3 p, V3& pp) {

@@ -39,49 +39,53 @@ int FrameBuffer::handle(int event) {
 		KeyboardHandle();
 		return 0;
 	}
+	case FL_MOVE: {
+		MouseHandle();
+		return 0;
+	}
 	default:
 		break;
 	}
 	return 0;
 }
 
-int FrameBuffer::getXin() {
+float FrameBuffer::getXin() {
 	int tmp = inx;
 	inx = 0;
 	return tmp;
 }
 
-int FrameBuffer::getYin() {
+float FrameBuffer::getYin() {
 	int tmp = iny;
 	iny = 0;
 	return tmp;
 }
 
-int FrameBuffer::getZin() {
+float FrameBuffer::getZin() {
 	int tmp = inz;
 	inz = 0;
 	return tmp;
 }
 
-int FrameBuffer::getIin() {
+float FrameBuffer::getIin() {
 	int tmp = ini;
 	ini = 0;
 	return tmp;
 }
 
-int FrameBuffer::getJin() {
+float FrameBuffer::getJin() {
 	int tmp = inj;
 	inj = 0;
 	return tmp;
 }
 
-int FrameBuffer::getUin() {
+float FrameBuffer::getUin() {
 	int tmp = inu;
 	inu = 0;
 	return tmp;
 }
 
-int FrameBuffer::getPin() {
+float FrameBuffer::getPin() {
 	int tmp = inp;
 	inp = 0;
 	return tmp;
@@ -104,7 +108,7 @@ void FrameBuffer::input(int x, int y, int z) {
 	iny += y;
 	inz += z;
 }
-void FrameBuffer::input2(int i, int j, int u, int p) {
+void FrameBuffer::input2(float i, float j, float u, float p) {
 	ini += i;
 	inj += j;
 	inu += u;
@@ -175,6 +179,26 @@ void FrameBuffer::KeyboardHandle() {
 	default:
 		cerr << "INFO: do not understand keypress" << endl;
 	}
+}
+
+bool initMouse = false;
+int mouseX, mouseY;
+
+void FrameBuffer::MouseHandle() {
+	if (!initMouse) {
+		initMouse = true;
+		mouseX = Fl::event_x();
+		mouseY = Fl::event_y();
+		return;
+	}
+	int xpos = Fl::event_x();
+	int ypos = Fl::event_y();
+	float xdiff = xpos - mouseX;
+	float ydiff = ypos - mouseY;
+	input2(-ydiff, 0, 0, 0);
+	input2(0, xdiff, 0, 0);
+	mouseX = xpos;
+	mouseY = ypos;
 }
 
 void FrameBuffer::SetPixelGuarded(float u, float v, unsigned int colour) {

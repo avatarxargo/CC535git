@@ -15,11 +15,12 @@ public:
 	float * zbuffer;
 	int * stencil;
 	int w, h;
-	volatile int inx, iny, inz, ini, inj, inu, inp;
+	volatile float inx, iny, inz, ini, inj, inu, inp;
 	volatile bool printCam = false, loadCam = false;
 	FrameBuffer(int u0, int v0, int _w, int _h);
 	void draw();
 	void KeyboardHandle();
+	void MouseHandle();
 	int handle(int guievent);
 	void refreshColor(unsigned int bgr);
 	void refreshDepth(float bgr);
@@ -49,14 +50,14 @@ public:
 	//
 	void fog(float start, float end, V3 color);
 	void input(int x, int y, int z);
-	void input2(int i, int j, int u, int p);
-	int getXin();
-	int getYin();
-	int getZin();
-	int getIin();
-	int getJin();
-	int getUin();
-	int getPin();
+	void input2(float i, float j, float u, float p);
+	float getXin();
+	float getYin();
+	float getZin();
+	float getIin();
+	float getJin();
+	float getUin();
+	float getPin();
 	bool getPrintCam();
 	bool getLoadCam();
 };

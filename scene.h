@@ -27,7 +27,8 @@ public:
 	void Save();
 	void Render();
 	void drawGrid();
-	void cameraControl();
+	void cameraControl(); 
+	void cameraControlFPS();
 	void cinematicCamera(bool save);
 	void animateScene();
 };
