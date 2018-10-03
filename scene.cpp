@@ -47,7 +47,7 @@ Scene::Scene() {
 	tm1->position(V3(0, 50, -200), 200);
 	tm2->position(V3(0, 50, -350), 200);
 	tm3->position(V3(-200, 50, -50), 350);
-	tm4->position(V3(100, 50, -250), 250);
+	tm4->position(V3(100, 50, -550), 250);
 	tm5->position(V3(-300, -250, -0), 1500);
 
 	rikako = new Texture("geometry/rikako.tif");
@@ -55,10 +55,14 @@ Scene::Scene() {
 	cerr << "opque:" << rikako->isOpaque();
 	yumemi = new Texture("geometry/yumemi.tif");
 	mesh = new Texture("geometry/mesh.tif");
+	mesh->setFilter(BILINEAR);
 	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
 	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
 	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
 	p1b = new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
+	p2 = new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
+	p2b = new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
+	floor = new Plane(V3(0, -50, -200), V3(350, 0, 0), V3(0, 0, -350), rikako);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
@@ -106,6 +110,7 @@ void updateLoop(Scene& scn, FrameBuffer* fb)
 void Scene::Render() {
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
+	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
 
 	//fb->drawRect(50, 100, 300, 150, 0xFF550066);
 	//fb->drawCircle(950, 600, 150, 0xFF55FF88);
@@ -126,16 +131,19 @@ void Scene::Render() {
 	//fb->DrawSegment(V3(-200, 200, 0), V3(1, 0, 0), V3(300, 300, 0), V3(0, 1, 0));
 	//tm1->renderWireframe(camera, fb);
 	tm1->renderFillTextured(camera, fb, rikako);
-	tm2->renderFillTextured(camera, fb, rikako);
-	tm3->renderFillTextured(camera, fb, rikako);
+	//tm2->renderFillTextured(camera, fb, rikako);
+	//tm3->renderFillTextured(camera, fb, rikako);
 	tm4->renderFillTextured(camera, fb, rikako);
 	tm1->getBoundingBox().render(camera, fb);
 	tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);
 	p0->draw(camera, fb);
 	p1->draw(camera, fb);
+	p2->draw(camera, fb);
+	p2b->draw(camera, fb);
 	p0b->drawScreenspace(camera, fb);
 	p1b->drawScreenspace(camera, fb);
+	floor->draw(camera, fb);
 
 	//grid
 	drawGrid();
@@ -253,7 +261,7 @@ void Scene::cinematicCamera(bool save) {
 }
 
 void Scene::cameraControl() {
-	float spd = 5;
+	float spd = 25;
 	float tspd = 10;
 	float zoomspd = 50;
 	camera->translate(V3(fb->getXin()*spd, fb->getYin()*spd, fb->getZin()*spd));

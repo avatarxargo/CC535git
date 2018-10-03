@@ -18,9 +18,10 @@ bool Texture::isOpaque() {
 	return (opacity == NULL);
 }
 
-float  Texture::clampCoordinate(float c) {
-	c = c - (int)c;
-	return c < 0 ? 1+c : c;
+float  Texture::clampCoordinate(float c, float off, int max) {
+	int u = ((int)(c*(max - 1) + off)) % max;
+	if (u < 0) u += max;
+	return u;
 }
 
 void  Texture::setFilter(TexFilter flt) {
@@ -38,37 +39,35 @@ unsigned int Texture::getColor(float _u, float _v) {
 
 unsigned int Texture::getColorNearest(float _u, float _v) {
 	//clamp to 0,1 preserving offset
-	int u = ((int)(_u*(w-1)))%w;
-	int v = ((int)((1-_v)*(h-1)))%h;
+	int u = ((int)(_u*(w - 1))) % w;
+	int v = ((int)((1 - _v)*(h - 1))) % h;
 	if (u < 0) u += w;
 	if (v < 0) v += h;
-	int ru = (int)u;
-	int rv = (int)v;
-	if (v * w + u > w * h || v * w + u < 0)
-		cerr << ru << " , " << rv << " : " << u << " , " << v << " from: " << _u << "  ," << _v << "\n";
+	//int ru = (int)u;
+	//int rv = (int)v;
+	//if (v * w + u > w * h || v * w + u < 0)
+	//	cerr << ru << " , " << rv << " : " << u << " , " << v << " from: " << _u << "  ," << _v << "\n";
 
 	return pix[v * w + u];
 }
 
 unsigned int Texture::getColorBilinear(float _u, float _v) {
-	//clamp to 0,1 preserving offset
-	float u = _u - (int)_u;
-	float v = _v - (int)_v;
-	if (u < 0) u += 1;
-	if (v < 0) v += 1;
-	//if (u < 0 || u>1 || v < 0 || v>1) {
-	//	cerr << u << " , " << v << "from: " << _u << "  ," << _v <<"\n";
-	//}
-	u *= (w - 1);
-	v = (1 - v)*(h - 1);
-	//if (u >= w - 1) u = w - 1;
-	//if (v < h - 1) v = h - 1;
-	int ru = (int)u;
-	int rv = (int)v;
-	//if (rv * w + ru > w * h || rv * w + ru < 0)
-	//	cerr << ru << " , " << rv << " : " << u << " , " << v << " from: " << _u << "  ," << _v << "\n";
+	int left = clampCoordinate(_u, -0.5f, w);
+	int right = clampCoordinate(_u, 0.5f, w);
+	int bot = clampCoordinate(_v, -0.5f, h);
+	int top = clampCoordinate(_v, 0.5f, h);
 
-	return pix[rv * w + ru];
+	float lweight = _u - left;
+	float rweight = right - _u;
+	float bweight = _v - bot;
+	float tweight = top - _v;
+
+	V3 a = V3(pix[top * w + left]);
+	V3 b = V3(pix[top * w + right]);
+	V3 c = V3(pix[bot * w + left]);
+	V3 d = V3(pix[bot * w + right]);
+
+	return ((a*lweight * tweight + b * rweight* tweight + c * lweight* bweight + d * rweight* bweight)).getColor();
 }
 
 float Texture::getOpacityNearest(float _u, float _v) {

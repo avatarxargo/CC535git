@@ -22,7 +22,7 @@ public:
 	void loadTiff(char* path);
 	bool isOpaque();
 	//
-	float clampCoordinate(float c);
+	float clampCoordinate(float c, float off, int max);
 	void loadTiffTransparency(char* path);
 	unsigned int getColor(float u, float v);
 	unsigned int getColorNearest(float u, float v);

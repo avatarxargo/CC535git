@@ -19,7 +19,7 @@ public:
 	FrameBuffer *fb, *subfb;
 	PPC *camera, *cam1, *cam2, *vizcam;
 	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5;
-	Plane *p0, *p1, *p0b, *p1b;
+	Plane *p0, *p1, *p0b, *p1b, *p2, *p2b, *floor;
 	Texture *rikako, *yumemi, *mesh;
 	Scene();
 	bool vizcamena = false;
