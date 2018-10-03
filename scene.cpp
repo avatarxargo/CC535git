@@ -315,11 +315,11 @@ void Scene::cameraControlFPS() {
 	}
 	camera->pos[1] = ypos+50;
 
-	float tmp = fb->getJin()*tspd;
+	float tmp = fb->getInput(11)*tspd;
 	if (tmp != 0) {
 		camera->panFlat(-tmp,V3(0,1,0));
 	}
-	tmp = fb->getIin()*tspd;
+	tmp = fb->getInput(10)*tspd;
 	if (tmp != 0) {
 		camera->tilt(tmp);
 	}
@@ -338,6 +338,7 @@ void Scene::cameraControlFPS() {
 	if (fb->getLoadCam()) {
 		camera->loadFromFile("mydbg/cameraInfo.txt");
 	}
+	fb->resetInput();
 }
 
 void Scene::DBG() {

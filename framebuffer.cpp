@@ -39,6 +39,10 @@ int FrameBuffer::handle(int event) {
 		KeyboardHandle();
 		return 0;
 	}
+	case FL_KEYUP: {
+		KeyUpHandle();
+		return 0;
+	}
 	case FL_MOVE: {
 		MouseHandle();
 		return 0;
@@ -115,6 +119,35 @@ void FrameBuffer::input2(float i, float j, float u, float p) {
 	inp += p;
 }
 
+void FrameBuffer::resetInput() {
+	for (int i = 0; i < 20; ++i) {
+		inputs[i] = 0;
+	}
+}
+
+void FrameBuffer::input(int idx, float value) {
+	inputs[idx] = value;
+}
+
+void FrameBuffer::inputPlus(int idx, float value) {
+	inputs[idx] += value;
+}
+
+float FrameBuffer::getInput(int idx) {
+	return inputs[idx];
+}
+
+
+void FrameBuffer::KeyUpHandle() {
+
+	int key = Fl::event_key();
+	switch (key) {
+
+	default:
+		break;
+	}
+}
+
 void FrameBuffer::KeyboardHandle() {
 
 	int key = Fl::event_key();
@@ -124,21 +157,27 @@ void FrameBuffer::KeyboardHandle() {
 		break;
 	}
 	case 'a':
+		input(0, -1);
 		input(-1, 0, 0);
 		break;
 	case 'w':
+		input(1, 1);
 		input(0, 1, 0);
 		break;
 	case 's':
+		input(1, -1);
 		input(0, -1, 0);
 		break;
 	case 'd':
+		input(0, 1);
 		input(1, 0, 0);
 		break;
 	case 'e':
+		input(2, 1);
 		input(0, 0, 1);
 		break;
 	case 'q':
+		input(2, -1);
 		input(0, 0, -1);
 		break;
 	case 'i':
@@ -195,8 +234,10 @@ void FrameBuffer::MouseHandle() {
 	int ypos = Fl::event_y();
 	float xdiff = xpos - mouseX;
 	float ydiff = ypos - mouseY;
-	input2(-ydiff, 0, 0, 0);
-	input2(0, xdiff, 0, 0);
+	//input2(-ydiff, 0, 0, 0);
+	//input2(0, xdiff, 0, 0);
+	input(10, -ydiff);
+	input(11, xdiff);
 	mouseX = xpos;
 	mouseY = ypos;
 }

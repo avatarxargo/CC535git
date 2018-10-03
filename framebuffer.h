@@ -16,9 +16,11 @@ public:
 	int * stencil;
 	int w, h;
 	volatile float inx, iny, inz, ini, inj, inu, inp;
+	volatile float inputs[20];
 	volatile bool printCam = false, loadCam = false;
 	FrameBuffer(int u0, int v0, int _w, int _h);
 	void draw();
+	void KeyUpHandle();
 	void KeyboardHandle();
 	void MouseHandle();
 	int handle(int guievent);
@@ -58,6 +60,10 @@ public:
 	float getJin();
 	float getUin();
 	float getPin();
+	void input(int idx, float vlaue);
+	void inputPlus(int idx, float vlaue);
+	float getInput(int idx);
+	void resetInput();
 	bool getPrintCam();
 	bool getLoadCam();
 };
