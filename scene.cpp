@@ -56,7 +56,12 @@ Scene::Scene() {
 	yumemi = new Texture("geometry/yumemi.tif");
 	mesh = new Texture("geometry/mesh.tif");
 	ground = new Texture("geometry/ground.tif");
+	hamster = new Texture("geometry/hamster.tif");
+	hamsterBil = new Texture("geometry/hamster.tif");
+	hamsterBil->loadTiffTransparency("geometry/hamstera.tif");
 	mesh->setFilter(BILINEAR);
+	hamsterBil->setFilter(BILINEAR);
+	rikako->setFilter(BILINEAR);
 	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
 	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
 	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
@@ -64,6 +69,9 @@ Scene::Scene() {
 	p2 = new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
 	p2b = new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
 	floor = new Plane(V3(0, -50, -200), V3(350, 0, 0), V3(0, 0, -350), rikako);
+	phamster = new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster);
+	phamsterb = new Plane(V3(-500, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), hamsterBil);
+	phamsterb->setUV(3, 3);
 	groundMesh = new Plane(V3(0, -55, -1000), V3(1000, 0, 0), V3(0, 0, -1000), ground);
 	groundMesh->setUV(10, 10);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
@@ -152,6 +160,8 @@ void Scene::Render() {
 	p1->draw(camera, fb);
 	p2->draw(camera, fb);
 	p2b->draw(camera, fb);
+	phamster->draw(camera, fb);
+	phamsterb->draw(camera, fb);
 
 	//grid
 	drawGrid();
