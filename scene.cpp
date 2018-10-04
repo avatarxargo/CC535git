@@ -55,6 +55,7 @@ Scene::Scene() {
 	cerr << "opque:" << rikako->isOpaque();
 	yumemi = new Texture("geometry/yumemi.tif");
 	mesh = new Texture("geometry/mesh.tif");
+	ground = new Texture("geometry/ground.tif");
 	mesh->setFilter(BILINEAR);
 	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
 	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
@@ -63,6 +64,8 @@ Scene::Scene() {
 	p2 = new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
 	p2b = new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
 	floor = new Plane(V3(0, -50, -200), V3(350, 0, 0), V3(0, 0, -350), rikako);
+	groundMesh = new Plane(V3(0, -55, -1000), V3(1000, 0, 0), V3(0, 0, -1000), ground);
+	groundMesh->setUV(10, 10);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
@@ -70,6 +73,8 @@ Scene::Scene() {
 
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
+	Light* l1 = new Light(V3(0, 0, 0), V3(1, 1, 1), 400, 1500);
+	fb->addLight(l1);
 	fb->show();
 
 	if (vizcamena) {
@@ -112,6 +117,7 @@ void Scene::Render() {
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
 	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
+	fb->lights[0]->position = camera->pos;
 
 	//fb->drawRect(50, 100, 300, 150, 0xFF550066);
 	//fb->drawCircle(950, 600, 150, 0xFF55FF88);
@@ -138,13 +144,14 @@ void Scene::Render() {
 	tm1->getBoundingBox().render(camera, fb);
 	tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);
+	p0b->drawScreenspace(camera, fb);
+	p1b->drawScreenspace(camera, fb);
+	groundMesh->draw(camera, fb);
+	floor->draw(camera, fb);
 	p0->draw(camera, fb);
 	p1->draw(camera, fb);
 	p2->draw(camera, fb);
 	p2b->draw(camera, fb);
-	p0b->drawScreenspace(camera, fb);
-	p1b->drawScreenspace(camera, fb);
-	floor->draw(camera, fb);
 
 	//grid
 	drawGrid();
@@ -300,7 +307,7 @@ void Scene::cameraControlFPS() {
 	float spd = 25;
 	float tspd = 1;
 	float zoomspd = 50;
-	camera->translateFlat(V3(fb->getYin()*spd, fb->getXin()*spd, 0));
+	camera->translateFlat(V3(fb->getInput(1)*spd, fb->getInput(0)*spd, 0));
 	if (grounded && fb->getZin()*spd > 0) {
 		grounded = false;
 		yspd = jumpspd;
@@ -338,7 +345,8 @@ void Scene::cameraControlFPS() {
 	if (fb->getLoadCam()) {
 		camera->loadFromFile("mydbg/cameraInfo.txt");
 	}
-	fb->resetInput();
+	fb->input(10, 0);
+	fb->input(11, 0);
 }
 
 void Scene::DBG() {

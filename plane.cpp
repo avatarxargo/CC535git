@@ -12,15 +12,18 @@ Plane::Plane(V3 centre, V3 up, V3 left, Texture* _tex) {
 	b = centre + up - left;
 	c = centre - up + left;
 	d = centre - up - left;
-	uva = V3(0, 0, 0);
-	uvb = V3(1, 0, 0);
-	uvc = V3(0, 1, 0);
-	uvd = V3(1, 1, 0);
+	setUV(1,1);
+	na = nb = nc = nd = (up % left).norm();
+}
+
+void Plane::drawUnlit(PPC* ppc, FrameBuffer* fb) {
+	fb->draw3DTriangleTextured(c, uvc, b, uvb, a, uva, ppc, tex);
+	fb->draw3DTriangleTextured(c, uvc, d, uvd, b, uvb, ppc, tex);
 }
 
 void Plane::draw(PPC* ppc, FrameBuffer* fb) {
-	fb->draw3DTriangleTextured(c, uvc, b, uvb, a, uva, ppc, tex);
-	fb->draw3DTriangleTextured(c, uvc, d, uvd, b, uvb, ppc, tex);
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, tex);
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, tex);
 }
 
 void Plane::drawScreenspace(PPC* ppc, FrameBuffer* fb) {
@@ -31,4 +34,13 @@ void Plane::drawScreenspace(PPC* ppc, FrameBuffer* fb) {
 void Plane::drawuv(PPC* ppc, FrameBuffer* fb) {
 	fb->draw3DTriangle(c, uvc, b, uvb, a, uva, ppc);
 	fb->draw3DTriangle(c, uvc, d, uvd, b, uvb, ppc);
+}
+
+void Plane::setUV(int w, int h) {
+	uvtilew = w;
+	uvtileh = h;
+	uva = V3(0, 0, 0);
+	uvb = V3(w, 0, 0);
+	uvc = V3(0, h, 0);
+	uvd = V3(w, h, 0);
 }

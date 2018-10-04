@@ -8,6 +8,8 @@
 #include "m33.h"
 #include "ppc.h"
 #include "texture.h"
+#include "light.h"
+#include <vector>
 
 class FrameBuffer : public Fl_Gl_Window {
 public:
@@ -15,12 +17,13 @@ public:
 	float * zbuffer;
 	int * stencil;
 	int w, h;
+	vector<Light*> lights;
 	volatile float inx, iny, inz, ini, inj, inu, inp;
 	volatile float inputs[20];
 	volatile bool printCam = false, loadCam = false;
 	FrameBuffer(int u0, int v0, int _w, int _h);
 	void draw();
-	void KeyUpHandle();
+	void KeyUpHandle(bool down);
 	void KeyboardHandle();
 	void MouseHandle();
 	int handle(int guievent);
@@ -49,7 +52,10 @@ public:
 	void draw3DTriangle(V3 point1, V3 color1, V3 point2, V3 color2, V3 point3, V3 color3, PPC* camera);
 	void draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex);
 	void draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex);
+	void draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Texture* tex);
 	//
+	void addLight(Light* l);
+	void removeLight(int idx);
 	void fog(float start, float end, V3 color);
 	void input(int x, int y, int z);
 	void input2(float i, float j, float u, float p);

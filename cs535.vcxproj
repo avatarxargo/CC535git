@@ -119,6 +119,7 @@
     <ClCompile Include="aabb.cpp" />
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gui.cxx" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="m33.cpp" />
     <ClCompile Include="objLoader.cpp" />
     <ClCompile Include="plane.cpp" />

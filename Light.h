@@ -10,5 +10,7 @@
 class Light {
 public:
 	V3 position, color;
-	float intensity;
+	float rangeStart, rangeMax;
+	Light(V3 pos, V3 color, float rangeStart, float rangeMax);
+	V3 getIntensity(V3 point, V3 normal);
 };

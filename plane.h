@@ -14,9 +14,13 @@ class Plane {
 public:
 	V3 a, b, c, d;
 	V3 uva, uvb, uvc, uvd;
+	V3 na, nb, nc, nd;
+	int uvtilew, uvtileh;
 	Texture* tex;
 	Plane(V3 centre, V3 up, V3 left, Texture* _tex);
+	void drawUnlit(PPC* ppc, FrameBuffer* fb);
 	void draw(PPC* ppc, FrameBuffer* fb);
 	void drawuv(PPC* ppc, FrameBuffer* fb);
 	void drawScreenspace(PPC* ppc, FrameBuffer* fb);
+	void setUV(int w, int h);
 };

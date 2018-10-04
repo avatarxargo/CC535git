@@ -37,10 +37,11 @@ int FrameBuffer::handle(int event) {
 	{
 	case FL_KEYBOARD: {
 		KeyboardHandle();
+		KeyUpHandle(true);
 		return 0;
 	}
 	case FL_KEYUP: {
-		KeyUpHandle();
+		KeyUpHandle(false);
 		return 0;
 	}
 	case FL_MOVE: {
@@ -138,13 +139,54 @@ float FrameBuffer::getInput(int idx) {
 }
 
 
-void FrameBuffer::KeyUpHandle() {
-
+void FrameBuffer::KeyUpHandle(bool down) {
 	int key = Fl::event_key();
-	switch (key) {
-
-	default:
-		break;
+	if (down) {
+		switch (key) {
+		case 'a':
+			input(0, -1);
+			return;
+		case 'w':
+			input(1, 1);
+			return;
+		case 's':
+			input(1, -1);
+			return;
+		case 'd':
+			input(0, 1);
+			return;
+		case 'e':
+			input(2, 1);
+			return;
+		case 'q':
+			input(2, -1);
+			return;
+		default:
+			return;
+		}
+	}
+	else {
+		switch (key) {
+		case 'a':
+			input(0, 0);
+			return;
+		case 'w':
+			input(1, 0);
+			return;
+		case 's':
+			input(1, 0);
+			return;
+		case 'd':
+			input(0, 0);
+			return;
+		case 'e':
+			input(2, 0);
+			return;
+		case 'q':
+			input(2, 0);
+		default:
+			return;
+		}
 	}
 }
 
@@ -157,27 +199,21 @@ void FrameBuffer::KeyboardHandle() {
 		break;
 	}
 	case 'a':
-		input(0, -1);
 		input(-1, 0, 0);
 		break;
 	case 'w':
-		input(1, 1);
 		input(0, 1, 0);
 		break;
 	case 's':
-		input(1, -1);
 		input(0, -1, 0);
 		break;
 	case 'd':
-		input(0, 1);
 		input(1, 0, 0);
 		break;
 	case 'e':
-		input(2, 1);
 		input(0, 0, 1);
 		break;
 	case 'q':
-		input(2, -1);
 		input(0, 0, -1);
 		break;
 	case 'i':
@@ -512,13 +548,13 @@ void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2,
 	V3 v2 = point2;
 	V3 v3 = point3;
 	V3 C = camera->pos;
-	M33 abc(a,b,c);
+	M33 abc(a, b, c);
 	abc = abc.transpose();
-	M33 q = M33(v1-C,v2-C,v3-C).transpose();
+	M33 q = M33(v1 - C, v2 - C, v3 - C).transpose();
 	M33 qinv;
 	if (!q.inverse(&qinv))
 		return;
-	q = qinv*abc;
+	q = qinv * abc;
 	//cerr << "q:\n" << q << "\n";
 	//
 	V3 uvw1to2 = uvw2 - uvw1;
@@ -547,17 +583,107 @@ void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2,
 			unsigned int col = tex->getColor(localCoord[0], localCoord[1]);
 			if (opaque) {
 				setZ(u, v, 1 / w, col);
-			} else {
+			}
+			else {
 				float alpha = tex->getOpacityNearest(localCoord[0], localCoord[1]);
 				setZBlend(u, v, 1 / w, col, alpha);
 			}
 		}
 	}
+}
 
-	/*float z = pp1[2] * W1 + pp2[2] * W2 + pp3[2] * W3;
-	V3 uvw = uvw1 * W1 + uvw2 * W2 + uvw3 * W3;
-	unsigned int col = tex->getColorNearest(uvw[0], uvw[1]);
-	setZ(u, v, z, col);*/
+void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Texture* tex) {
+	V3 pp1, pp2, pp3;
+	if (!camera->project(point1, pp1))
+		return;
+	if (!camera->project(point2, pp2))
+		return;
+	if (!camera->project(point3, pp3))
+		return;
+
+	//round to int
+	int ui0 = floorf(pp1[0] + 0.5);
+	int vi0 = floorf(pp1[1] + 0.5);
+	int ui1 = floorf(pp2[0] + 0.5);
+	int vi1 = floorf(pp2[1] + 0.5);
+	int ui2 = floorf(pp3[0] + 0.5);
+	int vi2 = floorf(pp3[1] + 0.5);
+
+	//clamping
+	int umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	int vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	int umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	int vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
+	if (umin < 0) { umin = 0; }
+	if (vmin < 0) { vmin = 0; }
+	if (umax > w - 1) { umax = w - 1; }
+	if (vmax > h - 1) { vmax = h - 1; }
+
+	V3 a = camera->horizontal;
+	V3 b = camera->vertical;
+	V3 c = camera->topleft;
+	V3 v1 = point1;
+	V3 v2 = point2;
+	V3 v3 = point3;
+	V3 C = camera->pos;
+	M33 abc(a, b, c);
+	abc = abc.transpose();
+	M33 q = M33(v1 - C, v2 - C, v3 - C).transpose();
+	M33 qinv;
+	if (!q.inverse(&qinv))
+		return;
+	q = qinv * abc;
+	//cerr << "q:\n" << q << "\n";
+	//
+	V3 uvw1to2 = uvw2 - uvw1;
+	V3 uvw1to3 = uvw3 - uvw1;
+	float z1to2 = v2[2] - v1[2];
+	float z1to3 = v3[2] - v1[2];
+
+	bool opaque = tex->isOpaque();
+
+	//render using Model Space Coordinates
+	for (int u = umin; u < umax; ++u) {
+		for (int v = vmin; v < vmax; ++v) {
+			int side1 = u * (vi1 - vi0) - v * (ui1 - ui0) - ui0 * vi1 + vi0 * ui1; //0 1
+			int side2 = u * (vi2 - vi1) - v * (ui2 - ui1) - ui1 * vi2 + vi1 * ui2; //1 2
+			int side3 = u * (vi0 - vi2) - v * (ui0 - ui2) - ui2 * vi0 + vi2 * ui0; //2 0 
+			if (side1 < 0 || side2 < 0 || side3 < 0)
+				continue;
+			V3 uv1 = V3(u, v, 1);
+			V3 quv1 = (q * uv1);
+			float w = (quv1[0] + quv1[1] + quv1[2]);
+			if (w*w < 0.00001) { continue; }
+			//1-k-l = kl[0], k = kl[1], l = kl[2]
+			V3 kl = quv1 / w;
+			//V3 localCoord = uvw1 + uvw1to2 * kl[1] + uvw1to3 * kl[2];
+			V3 localCoord = uvw1 * kl[0] + uvw2 * kl[1] + uvw3 * kl[2];
+			V3 localPos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
+			V3 localNormal = (normal1 * kl[0] + normal2 * kl[1] + normal3 * kl[2]).norm();
+			unsigned int col = tex->getColor(localCoord[0], localCoord[1]);
+			V3 coll(col);
+			V3 lightFactor = lights[0]->getIntensity(localPos, localNormal);
+			coll[0] = coll[0] * lightFactor[0];
+			coll[1] = coll[1] * lightFactor[1];
+			coll[2] = coll[2] * lightFactor[2];
+			if (opaque) {
+				setZ(u, v, 1 / w, coll.getColor());
+			}
+			else {
+				float alpha = tex->getOpacityNearest(localCoord[0], localCoord[1]);
+				setZBlend(u, v, 1 / w, coll.getColor(), alpha);
+			}
+		}
+	}
+}
+
+
+void FrameBuffer::addLight(Light* l) {
+	lights.insert(lights.end(), l);
+}
+
+void FrameBuffer::removeLight(int idx) {
+	lights.erase(lights.begin() + idx);
 }
 
 
@@ -568,10 +694,12 @@ void FrameBuffer::fog(float start, float end, V3 color) {
 			float z = zbuffer[i*w + j];
 			if (z < start) {
 				continue;
-			} else if (z > end) {
+			}
+			else if (z > end) {
 				pix[i*w + j] = col;
 				continue;
-			} else {
+			}
+			else {
 				float rate = (z - start) / (end - start);
 				V3 myc(pix[i*w + j]);
 				myc = myc * (1 - rate) + color * rate;
