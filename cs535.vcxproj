@@ -104,7 +104,9 @@
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="LightEnvironment.h" />
     <ClInclude Include="m33.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="objLoader.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="ppc.h" />
@@ -120,7 +122,9 @@
     <ClCompile Include="framebuffer.cpp" />
     <ClCompile Include="gui.cxx" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="LightEnvironment.cpp" />
     <ClCompile Include="m33.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="objLoader.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="ppc.cpp" />

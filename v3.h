@@ -23,6 +23,8 @@ public:
 	float operator*(V3 v1);
 	//cross product
 	V3 operator%(V3 v1);
+	//per element multi
+	V3 operator^(V3 v1);
 	V3 operator*(float scalar);
 	V3 operator/(float scalar);
 	V3 norm();

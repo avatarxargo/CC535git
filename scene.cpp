@@ -23,9 +23,10 @@ Scene::Scene() {
 
 	camera = new PPC(60, w, h);
 	camera->pos = camera->pos + V3(0, 50, 0);
+	camera->loadFromFile("mydbg/cameraInfo.txt");
 	cam1 = new PPC(60, w, h);
 	cam2 = new PPC(60, w, h);
-	vizcam = new PPC(60, w, h)			;
+	vizcam = new PPC(60, w, h);
 
 	tm1 = new TriangleMesh();
 	tm2 = new TriangleMesh();
@@ -50,18 +51,20 @@ Scene::Scene() {
 	tm4->position(V3(100, 50, -550), 250);
 	tm5->position(V3(-300, -250, -0), 1500);
 
-	rikako = new Texture("geometry/rikako.tif");
-	rikako->loadTiffTransparency("geometry/rikako_opacity.tif");
-	cerr << "opque:" << rikako->isOpaque();
-	yumemi = new Texture("geometry/yumemi.tif");
-	mesh = new Texture("geometry/mesh.tif");
-	ground = new Texture("geometry/ground.tif");
-	hamster = new Texture("geometry/hamster.tif");
-	hamsterBil = new Texture("geometry/hamster.tif");
-	hamsterBil->loadTiffTransparency("geometry/hamstera.tif");
-	mesh->setFilter(BILINEAR);
-	hamsterBil->setFilter(BILINEAR);
-	rikako->setFilter(BILINEAR);
+	rikako = new Material("geometry/rikako.tif");
+	rikako->setOpacity(new Texture("geometry/rikako_opacity.tif"));
+	yumemi = new Material("geometry/yumemi.tif");
+	mesh = new Material("geometry/mesh.tif");
+	ground = new Material("geometry/ground.tif");
+	hamster = new Material("geometry/hamster.tif");
+	hamsterBil = new Material("geometry/hamster.tif");
+	hamsterBil->setOpacity(new Texture("geometry/hamstera.tif"));
+	tst = new Material("geometry/tst.tif");
+	tstbil = new Material("geometry/tst.tif");
+	tstbil->getDiffuse()->setFilter(BILINEAR);
+	mesh->getDiffuse()->setFilter(BILINEAR);
+	hamsterBil->getDiffuse()->setFilter(BILINEAR);
+	rikako->getDiffuse()->setFilter(BILINEAR);
 	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
 	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
 	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
@@ -71,7 +74,11 @@ Scene::Scene() {
 	floor = new Plane(V3(0, -50, -200), V3(350, 0, 0), V3(0, 0, -350), rikako);
 	phamster = new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster);
 	phamsterb = new Plane(V3(-500, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), hamsterBil);
+	tstplane = new Plane(V3(-750, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), tst);
+	tstplanebil = new Plane(V3(-750, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), tstbil);
 	phamsterb->setUV(3, 3);
+	tstplane->setUV(2, 2);
+	tstplanebil->setUV(2, 2);
 	groundMesh = new Plane(V3(0, -55, -1000), V3(1000, 0, 0), V3(0, 0, -1000), ground);
 	groundMesh->setUV(10, 10);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
@@ -125,7 +132,7 @@ void Scene::Render() {
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
 	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
-	fb->lights[0]->position = camera->pos;
+	fb->lightEnvironment->lights[0]->position = camera->pos;
 
 	//fb->drawRect(50, 100, 300, 150, 0xFF550066);
 	//fb->drawCircle(950, 600, 150, 0xFF55FF88);
@@ -145,15 +152,16 @@ void Scene::Render() {
 	//fb->drawCircle(pos[0], pos[1], 5, 0xFF9999AA);
 	//fb->DrawSegment(V3(-200, 200, 0), V3(1, 0, 0), V3(300, 300, 0), V3(0, 1, 0));
 	//tm1->renderWireframe(camera, fb);
-	tm1->renderFillTextured(camera, fb, rikako);
 	//tm2->renderFillTextured(camera, fb, rikako);
 	//tm3->renderFillTextured(camera, fb, rikako);
-	tm4->renderFillTextured(camera, fb, rikako);
+	tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
+	tm4->renderFillTextured(camera, fb, rikako->getDiffuse());
 	tm1->getBoundingBox().render(camera, fb);
 	tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);
 	p0b->drawScreenspace(camera, fb);
 	p1b->drawScreenspace(camera, fb);
+	//cerr << "here\n";
 	groundMesh->draw(camera, fb);
 	floor->draw(camera, fb);
 	p0->draw(camera, fb);
@@ -162,6 +170,8 @@ void Scene::Render() {
 	p2b->draw(camera, fb);
 	phamster->draw(camera, fb);
 	phamsterb->draw(camera, fb);
+	tstplane->draw(camera, fb);
+	tstplanebil->draw(camera, fb);
 
 	//grid
 	drawGrid();

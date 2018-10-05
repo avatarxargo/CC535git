@@ -6,8 +6,8 @@
  *	Desc:	Makes rendering squares with textures more convenient
  */
 
-Plane::Plane(V3 centre, V3 up, V3 left, Texture* _tex) {
-	tex = _tex;
+Plane::Plane(V3 centre, V3 up, V3 left, Material* _mat) {
+	mat = _mat;
 	a = centre + up + left;
 	b = centre + up - left;
 	c = centre - up + left;
@@ -17,18 +17,18 @@ Plane::Plane(V3 centre, V3 up, V3 left, Texture* _tex) {
 }
 
 void Plane::drawUnlit(PPC* ppc, FrameBuffer* fb) {
-	fb->draw3DTriangleTextured(c, uvc, b, uvb, a, uva, ppc, tex);
-	fb->draw3DTriangleTextured(c, uvc, d, uvd, b, uvb, ppc, tex);
+	fb->draw3DTriangleTextured(c, uvc, b, uvb, a, uva, ppc, mat);
+	fb->draw3DTriangleTextured(c, uvc, d, uvd, b, uvb, ppc, mat);
 }
 
 void Plane::draw(PPC* ppc, FrameBuffer* fb) {
-	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, tex);
-	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, tex);
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, mat);
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, mat);
 }
 
 void Plane::drawScreenspace(PPC* ppc, FrameBuffer* fb) {
-	fb->draw3DTriangleTexturedScreenspace(c, uvc, b, uvb, a, uva, ppc, tex);
-	fb->draw3DTriangleTexturedScreenspace(c, uvc, d, uvd, b, uvb, ppc, tex);
+	fb->draw3DTriangleTexturedScreenspace(c, uvc, b, uvb, a, uva, ppc, mat);
+	fb->draw3DTriangleTexturedScreenspace(c, uvc, d, uvd, b, uvb, ppc, mat);
 }
 
 void Plane::drawuv(PPC* ppc, FrameBuffer* fb) {

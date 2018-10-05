@@ -6,6 +6,8 @@
 #include "framebuffer.h"
 #include "videoSaver.h"
 #include "plane.h"
+#include "lightEnvironment.h"
+#include "material.h"
 //Still broken... no documentation for their stupid library.
 //#include "VideoCapturePlus.h"
 #include <fstream>
@@ -19,8 +21,8 @@ public:
 	FrameBuffer *fb, *subfb;
 	PPC *camera, *cam1, *cam2, *vizcam;
 	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5;
-	Plane *p0, *p1, *p0b, *p1b, *p2, *p2b, *floor, *groundMesh, *phamster, *phamsterb;
-	Texture *rikako, *yumemi, *mesh, *ground, *hamster, *hamsterBil;
+	Plane *p0, *p1, *p0b, *p1b, *p2, *p2b, *floor, *groundMesh, *phamster, *phamsterb, *tstplane, *tstplanebil;
+	Material *rikako, *yumemi, *mesh, *ground, *hamster, *hamsterBil, *tst, *tstbil;
 	Scene();
 	bool vizcamena = false;
 	void DBG();

@@ -7,7 +7,7 @@
  */
 #include "framebuffer.h"
 #include "ppc.h"
-#include "texture.h"
+#include "material.h"
 #include "v3.h"
 
 class Plane {
@@ -16,8 +16,8 @@ public:
 	V3 uva, uvb, uvc, uvd;
 	V3 na, nb, nc, nd;
 	int uvtilew, uvtileh;
-	Texture* tex;
-	Plane(V3 centre, V3 up, V3 left, Texture* _tex);
+	Material* mat;
+	Plane(V3 centre, V3 up, V3 left, Material* _mat);
 	void drawUnlit(PPC* ppc, FrameBuffer* fb);
 	void draw(PPC* ppc, FrameBuffer* fb);
 	void drawuv(PPC* ppc, FrameBuffer* fb);

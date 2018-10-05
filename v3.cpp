@@ -62,6 +62,15 @@ V3 V3::operator%(V3 v1) {
 	);
 }
 
+V3 V3::operator^(V3 v1) {
+	V3 &v0 = *this;
+	return V3(
+		v0[0] * v1[0],
+		v0[1] * v1[1],
+		v0[2] * v1[2]
+	);
+}
+
 /*ostream & operator<<(ostream & os, V3& v0) {
 	os << '[' << v0[0] << ',' << v0[1] << ',' << v0[2] << ']';
 	return os;

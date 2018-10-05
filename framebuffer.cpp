@@ -17,6 +17,8 @@ FrameBuffer::FrameBuffer(int u0, int v0, int _w, int _h)
 	pix = new unsigned int[w*h];
 	zbuffer = new float[w*h];
 	stencil = new int[w*h];
+	Light * ambience = new Light(V3(1,1,1));
+	lightEnvironment = new LightEnvironment(ambience);
 
 }
 
@@ -469,7 +471,7 @@ void FrameBuffer::draw3DTriangle(V3 point1, V3 color1, V3 point2, V3 color2, V3 
 	}
 }
 
-void FrameBuffer::draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex) {
+void FrameBuffer::draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Material* mat) {
 	V3 pp1, pp2, pp3;
 	if (!camera->project(point1, pp1))
 		return;
@@ -496,6 +498,7 @@ void FrameBuffer::draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point
 	if (umax > w - 1) { umax = w - 1; }
 	if (vmax > h - 1) { vmax = h - 1; }
 
+	V3 normal = (point3 - point1) % (point2 - point1);
 	//render using Barycentric Coordinates
 	for (int u = umin; u < umax; ++u) {
 		for (int v = vmin; v < vmax; ++v) {
@@ -506,15 +509,16 @@ void FrameBuffer::draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point
 			float W3 = 1 - W1 - W2;
 			if (W1 >= 0 && W2 >= 0 && W3 >= 0) {
 				float z = pp1[2] * W1 + pp2[2] * W2 + pp3[2] * W3;
+				V3 pos = point1 * W1 + point2 * W2 + point3 * W3;
 				V3 uvw = uvw1 * W1 + uvw2 * W2 + uvw3 * W3;
-				unsigned int col = tex->getColorNearest(uvw[0], uvw[1]);
+				unsigned int col = lightEnvironment->getLightingAtVertex(mat, pos, uvw, normal).getColor();
 				setZ(u, v, z, col);
 			}
 		}
 	}
 }
 
-void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Texture* tex) {
+void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Material* mat) {
 	V3 pp1, pp2, pp3;
 	if (!camera->project(point1, pp1))
 		return;
@@ -562,8 +566,9 @@ void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2,
 	float z1to2 = v2[2] - v1[2];
 	float z1to3 = v3[2] - v1[2];
 
-	bool opaque = tex->isOpaque();
+	bool opaque = mat->getOpacity();
 
+	V3 normal = (point3 - point1) % (point2 - point1);
 	//render using Model Space Coordinates
 	for (int u = umin; u < umax; ++u) {
 		for (int v = vmin; v < vmax; ++v) {
@@ -579,20 +584,21 @@ void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2,
 			//1-k-l = kl[0], k = kl[1], l = kl[2]
 			V3 kl = quv1 / w;
 			//V3 localCoord = uvw1 + uvw1to2 * kl[1] + uvw1to3 * kl[2];
+			V3 pos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
 			V3 localCoord = uvw1 * kl[0] + uvw2 * kl[1] + uvw3 * kl[2];
-			unsigned int col = tex->getColor(localCoord[0], localCoord[1]);
+			unsigned int col = lightEnvironment->getLightingAtVertex(mat, pos, localCoord, normal).getColor();
 			if (opaque) {
 				setZ(u, v, 1 / w, col);
 			}
 			else {
-				float alpha = tex->getOpacityNearest(localCoord[0], localCoord[1]);
+				float alpha = mat->getOpacity()->getColorNearest(localCoord[0], localCoord[1]);
 				setZBlend(u, v, 1 / w, col, alpha);
 			}
 		}
 	}
 }
 
-void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Texture* tex) {
+void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat) {
 	V3 pp1, pp2, pp3;
 	if (!camera->project(point1, pp1))
 		return;
@@ -640,7 +646,7 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 	float z1to2 = v2[2] - v1[2];
 	float z1to3 = v3[2] - v1[2];
 
-	bool opaque = tex->isOpaque();
+	bool opaque = !(mat->getOpacity()==NULL);
 
 	//render using Model Space Coordinates
 	for (int u = umin; u < umax; ++u) {
@@ -660,18 +666,18 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 			V3 localCoord = uvw1 * kl[0] + uvw2 * kl[1] + uvw3 * kl[2];
 			V3 localPos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
 			V3 localNormal = (normal1 * kl[0] + normal2 * kl[1] + normal3 * kl[2]).norm();
-			unsigned int col = tex->getColor(localCoord[0], localCoord[1]);
-			V3 coll(col);
+			V3 col = lightEnvironment->getLightingAtVertex(mat, localPos, localCoord, localNormal).getColor();
+			/*V3 coll(col);
 			V3 lightFactor = lights[0]->getIntensity(localPos, localNormal);
 			coll[0] = coll[0] * lightFactor[0];
 			coll[1] = coll[1] * lightFactor[1];
-			coll[2] = coll[2] * lightFactor[2];
+			coll[2] = coll[2] * lightFactor[2];*/
 			if (opaque) {
-				setZ(u, v, 1 / w, coll.getColor());
+				setZ(u, v, 1 / w, col.getColor());
 			}
 			else {
-				float alpha = tex->getOpacityNearest(localCoord[0], localCoord[1]);
-				setZBlend(u, v, 1 / w, coll.getColor(), alpha);
+				float alpha = 1;// mat->getOpacity()->getColorNearest(localCoord[0], localCoord[1]);
+				setZBlend(u, v, 1 / w, col.getColor(), alpha);
 			}
 		}
 	}
@@ -679,11 +685,11 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 
 
 void FrameBuffer::addLight(Light* l) {
-	lights.insert(lights.end(), l);
+	lightEnvironment->addLight(l);
 }
 
 void FrameBuffer::removeLight(int idx) {
-	lights.erase(lights.begin() + idx);
+	lightEnvironment->removeLight(idx);
 }
 
 
