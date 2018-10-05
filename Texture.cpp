@@ -136,6 +136,19 @@ unsigned int Texture::getColorBilinear(float _u, float _v) {
 	return col.getColor();
 }
 
+float Texture::getOpacityNearest(float _u, float _v) {
+	//clamp to 0,1 preserving offset
+	int u = ((int)(_u*(w)-0.5f)) % w;
+	int v = ((int)((1 - _v)*(h)-0.5f)) % h;
+	if (u < 0) u += w;
+	if (v < 0) v += h;
+	int ru = (int)u;
+	int rv = (int)v;
+	//if (v * w + u > w * h || v * w + u < 0)
+	//	cerr << ru << " , " << rv << " : " << u << " , " << v << " from: " << _u << "  ," << _v << "\n";
+	return opacity[v * w + u];
+}
+
 ///*int left = clampCoordinate(_u, -0.5f, w);
 //	int right = clampCoordinate(_u, 0.5f, w);
 //	int bot = clampCoordinate(_v, -0.5f, h);
@@ -185,18 +198,6 @@ unsigned int Texture::getColorBilinear(float _u, float _v) {
 //
 //return (intertop*tweight + interbot * bweight).getColor();
 
-float Texture::getOpacityNearest(float _u, float _v) {
-	//clamp to 0,1 preserving offset
-	int u = ((int)(_u*(w))) % w;
-	int v = ((int)((1 - _v)*(h))) % h;
-	if (u < 0) u += w;
-	if (v < 0) v += h;
-	int ru = (int)u;
-	int rv = (int)v;
-	//if (v * w + u > w * h || v * w + u < 0)
-	//	cerr << ru << " , " << rv << " : " << u << " , " << v << " from: " << _u << "  ," << _v << "\n";
-	return opacity[v * w + u];
-}
 
 void Texture::loadTiffTransparency(char* fname) {
 	TIFF* in = TIFFOpen(fname, "r");
