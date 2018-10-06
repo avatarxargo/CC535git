@@ -28,6 +28,7 @@ public:
 	V3 operator*(float scalar);
 	V3 operator/(float scalar);
 	V3 norm();
+	V3 clamp();
 	unsigned int getColor();
 	unsigned int getColor(float alpha);
 	float len();

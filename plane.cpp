@@ -22,6 +22,7 @@ void Plane::drawUnlit(PPC* ppc, FrameBuffer* fb) {
 }
 
 void Plane::draw(PPC* ppc, FrameBuffer* fb) {
+	fb->lightEnvironment->setCameraPos(ppc->pos);
 	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, mat);
 	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, mat);
 }

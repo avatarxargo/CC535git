@@ -97,6 +97,11 @@ V3 V3::norm() {
 	return V3(v0) / this->len();
 }
 
+V3 V3::clamp() {
+	V3 &v0 = *this;
+	return V3(fminf(v0[0],1), fminf(v0[1], 1), fminf(v0[2], 1));
+}
+
 
 unsigned int V3::getColor() {
 	V3 &v0 = *this;

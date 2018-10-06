@@ -18,4 +18,5 @@ Light::Light(V3 _position, V3 _color, float _rangeStart, float _rangeMax) {
 	color = _color;
 	rangeStart = _rangeStart;
 	rangeMax = _rangeMax;
+	diff = rangeMax - rangeStart;
 }

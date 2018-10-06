@@ -40,6 +40,7 @@
 	void renderWireframe(PPC *ppc, FrameBuffer *fb);
 	void renderFill(PPC *ppc, FrameBuffer *fb);
 	void renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture *tex);
+	void renderFillTexturedLit(PPC * ppc, FrameBuffer *fb, Material *mat);
 	void renderFillClip(PPC *ppc, FrameBuffer *fb);
 	//
 	void SetRectangle(V3 O, float rw, float rh);

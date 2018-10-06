@@ -132,7 +132,7 @@ void Scene::Render() {
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
 	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
-	fb->lightEnvironment->lights[0]->position = camera->pos;
+	//fb->lightEnvironment->lights[0]->position = camera->pos;
 
 	//fb->drawRect(50, 100, 300, 150, 0xFF550066);
 	//fb->drawCircle(950, 600, 150, 0xFF55FF88);
@@ -154,8 +154,12 @@ void Scene::Render() {
 	//tm1->renderWireframe(camera, fb);
 	//tm2->renderFillTextured(camera, fb, rikako);
 	//tm3->renderFillTextured(camera, fb, rikako);
-	tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
+	/*tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
 	tm4->renderFillTextured(camera, fb, rikako->getDiffuse());
+*/
+	tm1->renderFillTexturedLit(camera, fb, rikako);
+	tm4->renderFillTexturedLit(camera, fb, rikako);
+
 	tm1->getBoundingBox().render(camera, fb);
 	tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);

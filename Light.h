@@ -10,7 +10,7 @@
 class Light {
 public:
 	V3 position, color;
-	float rangeStart, rangeMax;
+	float rangeStart, rangeMax, diff;
 	Light(V3 color);
 	Light(V3 pos, V3 color, float rangeStart, float rangeMax);
 };

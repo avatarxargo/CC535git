@@ -96,6 +96,24 @@ void TriangleMesh::renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture * tex) 
 
 }
 
+void TriangleMesh::renderFillTexturedLit(PPC * ppc, FrameBuffer *fb, Material *mat) {
+	if (!tcs) {
+		renderFill(ppc, fb);
+		return;
+	}
+	fb->lightEnvironment->setCameraPos(ppc->pos);
+	for (int tri = 0; tri < trisN; tri++) {
+		int vi0 = tris[3 * tri];
+		int vi1 = tris[3 * tri + 1];
+		int vi2 = tris[3 * tri + 2];
+		V3 c0 = V3(tcs[vi0 * 2], tcs[vi0 * 2 + 1], 0);
+		V3 c1 = V3(tcs[vi1 * 2], tcs[vi1 * 2 + 1], 0);
+		V3 c2 = V3(tcs[vi2 * 2], tcs[vi2 * 2 + 1], 0);
+		fb->draw3DTriangleTexturedLit(verts[vi0], c0, normals[vi0], verts[vi1], c1, normals[vi1], verts[vi2], c2, normals[vi2], ppc, mat);
+	}
+
+}
+
 /*void TriangleMesh::renderFillClip(PPC *ppc, FrameBuffer *fb) {
 	V3 pverts[];
 	for (int tri = 0; tri < trisN; tri++) {
