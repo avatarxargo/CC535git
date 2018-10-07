@@ -8,6 +8,7 @@
 
 Material::Material(Texture* tex) {
 	diffuse = tex;
+	specularPower = 10;
 }
 
 Material::Material(char* tex) {

@@ -131,8 +131,9 @@ unsigned int Texture::getColorTrilinear(float _u, float _v, float _depth) {
 	if (top > (mipMapDepth - 1)) top = (mipMapDepth - 1);
 	float diffb = pick - bot;
 	float difft = top - pick;
-	//V3 bcol = V3(getColorBilinearTargeted(mipMap[i - 1], lastside, lastside, (1 + x * 2) / 8.0f, (1 + y * 2) / 8.0f));
-	return 0;
+	V3 bcol = V3(getColorBilinearTargeted(mipMap[bot], mipMapSides[bot], mipMapSides[bot], _u, _v));
+	V3 tcol = V3(getColorBilinearTargeted(mipMap[top], mipMapSides[top], mipMapSides[top], _u, _v));
+	return (bcol * difft + tcol * diffb).getColor();
 }
 
 //currently only generates power of two square textures
@@ -143,8 +144,10 @@ void Texture::genMipMap(int tiers, float maxdepth) {
 	mipMap.insert(mipMap.end(), pix);
 	int lastside = w;
 	int side = w;
+	mipMapSides.insert(mipMapSides.end(), side);
 	for (int i = 1; i < mipMapCount; ++i) {
 		side = sqrt(side);
+		mipMapSides.insert(mipMapSides.end(), side);
 		unsigned int* tmppix = new unsigned int[side*side];
 		//
 		for (int y = 0; y < side; ++y) {

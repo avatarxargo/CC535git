@@ -26,6 +26,7 @@ Scene::Scene() {
 	camera->loadFromFile("mydbg/cameraInfo.txt");
 	cam1 = new PPC(60, w, h);
 	cam2 = new PPC(60, w, h);
+	cam3 = new PPC(60, w, h);
 	vizcam = new PPC(60, w, h);
 
 	tm1 = new TriangleMesh();
@@ -51,27 +52,36 @@ Scene::Scene() {
 	tm4->position(V3(100, 50, -550), 250);
 	tm5->position(V3(-300, -250, -0), 1500);
 
-	rikako = new Material("geometry/rikako.tif");
-	rikako->setOpacity(new Texture("geometry/rikako_opacity.tif"));
-	yumemi = new Material("geometry/yumemi.tif");
-	mesh = new Material("geometry/mesh.tif");
-	ground = new Material("geometry/ground.tif");
-	hamster = new Material("geometry/hamster.tif");
-	hamsterBil = new Material("geometry/hamster.tif");
-	hamsterBil->setOpacity(new Texture("geometry/hamstera.tif"));
-	tst = new Material("geometry/tst.tif");
-	tstbil = new Material("geometry/tst.tif");
+	rikako = new Material("tex/rikako.tif");
+	rikako->setOpacity(new Texture("tex/rikako_opacity.tif"));
+	yumemi = new Material("tex/yumemi.tif");
+	mesh = new Material("tex/mesh.tif");
+	ground = new Material("tex/ground.tif");
+	hamster = new Material("tex/hamster.tif");
+	hamsterBil = new Material("tex/hamster.tif");
+	hamsterBil->setOpacity(new Texture("tex/hamstera.tif"));
+	wood1 = new Material("tex/wood1.tif");
+	wood2 = new Material("tex/wood2.tif");
+	wood1b = new Material("tex/wood1.tif");
+	wood2b = new Material("tex/wood2.tif");
+	tst = new Material("tex/tst.tif");
+	tstbil = new Material("tex/tst.tif");
 	tstbil->getDiffuse()->setFilter(BILINEAR);
 	mesh->getDiffuse()->setFilter(BILINEAR);
 	hamsterBil->getDiffuse()->setFilter(BILINEAR);
 	rikako->getDiffuse()->setFilter(BILINEAR);
-	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
+	wood1b->getDiffuse()->setFilter(BILINEAR);
+	wood2b->getDiffuse()->setFilter(BILINEAR);
+
+	tiles = new Material("tex/tiles.tif");
+	tiles->getDiffuse()->genMipMap(5,2000);
+	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1);
 	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
-	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), rikako);
+	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1b);
 	p1b = new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
-	p2 = new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
-	p2b = new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), yumemi);
-	floor = new Plane(V3(0, -50, -200), V3(350, 0, 0), V3(0, 0, -350), rikako);
+	p2 = new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2);
+	p2b = new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2b);
+	floor = new Plane(V3(0, -50, 0), V3(150, 0, 0), V3(0, 0, -150), tstbil);
 	phamster = new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster);
 	phamsterb = new Plane(V3(-500, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), hamsterBil);
 	tstplane = new Plane(V3(-750, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), tst);
@@ -79,8 +89,8 @@ Scene::Scene() {
 	phamsterb->setUV(3, 3);
 	tstplane->setUV(2, 2);
 	tstplanebil->setUV(2, 2);
-	groundMesh = new Plane(V3(0, -55, -1000), V3(1000, 0, 0), V3(0, 0, -1000), ground);
-	groundMesh->setUV(10, 10);
+	groundMesh = new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles);
+	groundMesh->setUV(20, 10);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
@@ -89,7 +99,7 @@ Scene::Scene() {
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
 	Light* ambientl = new Light(V3(0.1, 0.1, 0.2));
-	Light* l1 = new Light(V3(0, 0, 0), V3(1, 1, 1), 400, 600);
+	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 400, 600);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
 	fb->show();
@@ -159,14 +169,14 @@ void Scene::Render() {
 	/*tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
 	tm4->renderFillTextured(camera, fb, rikako->getDiffuse());
 */
-	tm1->renderFillTexturedLit(camera, fb, rikako);
-	tm4->renderFillTexturedLit(camera, fb, rikako);
+	tm1->renderFillTexturedLit(camera, fb, wood2);
+	//tm4->renderFillTexturedLit(camera, fb, wood2);
 
 	tm1->getBoundingBox().render(camera, fb);
-	tm4->getBoundingBox().render(camera, fb);
+	//tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);
-	p0b->drawScreenspace(camera, fb);
-	p1b->drawScreenspace(camera, fb);
+	//p0b->drawScreenspace(camera, fb);
+	//p1b->drawScreenspace(camera, fb);
 	//cerr << "here\n";
 	groundMesh->draw(camera, fb);
 	floor->draw(camera, fb);
@@ -261,8 +271,9 @@ void Scene::animateScene() {
 }
 
 void Scene::cinematicCamera(bool save) {
-	cam1->loadFromFile("mydbg/cam2.txt");
-	cam2->loadFromFile("mydbg/cam1.txt");
+	cam1->loadFromFile("mydbg/cam1.txt");
+	cam2->loadFromFile("mydbg/cam2.txt");
+	cam3->loadFromFile("mydbg/cam3.txt");
 	if (save) {
 		cerr << "Encoding video:" << endl;
 		encodeFile();
@@ -274,12 +285,12 @@ void Scene::cinematicCamera(bool save) {
 	for (int i = 0; i < iterations; ++i) {
 
 		if(i >= half)
-			cam1->interpolate(cam2, vizcam, (i-half) / half);
+			cam2->interpolate(cam3, camera, (i-half) / half);
 		else
-			cam1->interpolate(cam2, vizcam, 0);
+			cam1->interpolate(cam2, camera, (i / half));
 
 		animateScene();
-		cameraControlFPS();
+		//cameraControlFPS();
 
 		Render();
 		Fl::check();
@@ -384,7 +395,7 @@ void Scene::DBG() {
 	Quaternion q1(0.5f, 1, 0, 0);
 	cerr << vtorotate << " rotates to " << q1.rotateVectorAboutAngleAndAxis(vtorotate) << endl;*/
 
-	cinematicCamera(false);
+	//cinematicCamera(true);
 
 	while(true) {
 

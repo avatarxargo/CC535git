@@ -19,10 +19,10 @@ public:
 	
 	GUI *gui;
 	FrameBuffer *fb, *subfb;
-	PPC *camera, *cam1, *cam2, *vizcam;
+	PPC *camera, *cam1, *cam2, *cam3, *vizcam;
 	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5;
 	Plane *p0, *p1, *p0b, *p1b, *p2, *p2b, *floor, *groundMesh, *phamster, *phamsterb, *tstplane, *tstplanebil;
-	Material *rikako, *yumemi, *mesh, *ground, *hamster, *hamsterBil, *tst, *tstbil;
+	Material *tiles, *rikako, *yumemi, *mesh, *ground, *hamster, *hamsterBil, *tst, *tstbil, *wood1, *wood2, *wood1b, *wood2b;
 	Scene();
 	bool vizcamena = false;
 	void DBG();

@@ -18,6 +18,7 @@ public:
 	unsigned int* pix;
 	float mipMapDepth;
 	vector<unsigned int*> mipMap;
+	vector<int> mipMapSides;
 	Texture(int _w, int _h, float val);
 	Texture(char * path);
 	void setFilter(TexFilter flt);
