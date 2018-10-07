@@ -88,8 +88,10 @@ Scene::Scene() {
 
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
-	Light* l1 = new Light(V3(0, 0, 0), V3(1, 1, 1), 400, 1500);
+	Light* ambientl = new Light(V3(0.1, 0.1, 0.2));
+	Light* l1 = new Light(V3(0, 0, 0), V3(1, 1, 1), 400, 600);
 	fb->addLight(l1);
+	fb->lightEnvironment->setAmbient(ambientl);
 	fb->show();
 
 	if (vizcamena) {

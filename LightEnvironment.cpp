@@ -16,29 +16,33 @@ V3 LightEnvironment::getLightingAtVertex(Material* mat, V3 point, V3 uvw, V3 nor
 	//normalize more efficiently:
 	lightDirection = lightDirection.norm();
 	float specularPower = mat->getSpecularPower();
-	V3 diff = V3(mat->getDiffuse()->getColor(uvw[0], uvw[1]));
-	V3 specular = true?V3(0,0,0):V3(mat->getSpecular()->getColor(uvw[0], uvw[1]));
+	V3 diff = V3(mat->getDiffuse()->getColor(uvw));
+	V3 specularCol = V3(1, 1, 1);// true ? V3(0, 0, 0) : V3(mat->getSpecular()->getColor(uvw[0], uvw[1]));
 	//
 	if (distance > lights[0]->rangeMax) {
 		color =
 			diff ^ ambientLight->color;
+		//cerr << "diff: "<<diff << " , amvient " << ambientLight->color << " color: " << color << "\n";
 	}
 	else if (distance < lights[0]->rangeStart) {
-		float diffStrength = fabsf(lightDirection * normal);
-		float specularStrength = fabsf(lightDirection * viewDirection);
+		float diffStrength = fmaxf(lightDirection * normal, 0);
+		V3 halfway = (lightDirection + viewDirection).norm();
+		float specularStrength = fmaxf(powf(halfway * normal,mat->getSpecularPower()), 0);
+		V3 diffLight = ambientLight->color + lights[0]->color * diffStrength;
 		color =
-			diff ^ ambientLight->color +
-			diff ^ lights[0]->color * diffStrength +
-			specular ^ lights[0]->color * specularStrength;
+			diff ^ diffLight.clamp() +
+			specularCol * specularStrength;
 	}
 	else {
-		float diffStrength = fabsf(lightDirection * normal); 
-		float specularStrength = fabsf(lightDirection * viewDirection);
 		float lightStrength = (1 - ((distance - lights[0]->rangeStart) / (lights[0]->diff)));
+		//
+		float diffStrength = fmaxf(lightDirection * normal, 0);
+		V3 halfway = (lightDirection + viewDirection).norm();
+		float specularStrength = lightStrength * fmaxf(powf(halfway * normal, mat->getSpecularPower()), 0);
+		V3 diffLight = ambientLight->color + lights[0]->color * lightStrength * diffStrength;
 		color =
-			diff ^ ambientLight->color + 
-			diff ^ lights[0]->color * lightStrength * diffStrength +
-			specular ^ lights[0]->color * lightStrength * specularStrength;
+			diff ^ diffLight.clamp() +
+			specularCol * specularStrength;
 	}
 	return color.clamp();
 }

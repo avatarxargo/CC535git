@@ -21,6 +21,7 @@ void TriangleMesh::allocate() {
 void TriangleMesh::rotateAboutAxis(V3 origin, V3 angle, float angled) {
 	for (int vi = 0; vi < vertsN; vi++) {
 		verts[vi] = verts[vi].pointRotate(origin, angle, angled);
+		normals[vi] = normals[vi].vectorRotate(angle, angled);
 	}
 }
 

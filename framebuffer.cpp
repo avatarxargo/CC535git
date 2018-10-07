@@ -641,12 +641,8 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 	if (!q.inverse(&qinv))
 		return;
 	q = qinv * abc;
-	//cerr << "q:\n" << q << "\n";
-	//
-	/*V3 uvw1to2 = uvw2 - uvw1;
-	V3 uvw1to3 = uvw3 - uvw1;
-	float z1to2 = v2[2] - v1[2];
-	float z1to3 = v3[2] - v1[2];*/
+
+	bool opaque = !(mat->opacity);
 	
 	//render using Model Space Coordinates
 	for (int u = umin; u < umax; ++u) {
@@ -671,10 +667,10 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 			coll[0] = coll[0] * lightFactor[0];
 			coll[1] = coll[1] * lightFactor[1];
 			coll[2] = coll[2] * lightFactor[2];*/
-			if (mat->getOpacity()) {
+			if (opaque) {
 				setZ(u, v, 1 / w, col.getColor());
 			} else {
-				float alpha = 1;// V3(mat->getOpacity()->getColorNearest(localCoord[0], localCoord[1]))[0];
+				float alpha = V3(mat->getOpacity()->getColorNearest(localCoord[0], localCoord[1]))[0];
 				setZBlend(u, v, 1 / w, col.getColor(), alpha);
 			}
 		}

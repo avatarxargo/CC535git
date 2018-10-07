@@ -24,12 +24,14 @@ void  Texture::setFilter(TexFilter flt) {
 	filter = flt;
 }
 
-unsigned int Texture::getColor(float _u, float _v) {
+unsigned int Texture::getColor(V3 uvw) {
 	switch (filter) {
 	case NEAREST:
-		return getColorNearest(_u, _v);
+		return getColorNearest(uvw[0], uvw[1]);
 	case BILINEAR:
-		return getColorBilinear(_u, _v);
+		return getColorBilinear(uvw[0], uvw[1]);
+	case TRILINEAR:
+		return getColorTrilinear(uvw[0], uvw[1], uvw[2]);
 	}
 }
 
@@ -85,98 +87,76 @@ unsigned int Texture::getColorBilinear(float _u, float _v) {
 	return col.getColor();
 }
 
-/*float Texture::getOpacityNearest(float _u, float _v) {
-	//clamp to 0,1 preserving offset
-	int u = ((int)(_u*(w)-0.5f)) % w;
-	int v = ((int)((1 - _v)*(h)-0.5f)) % h;
-	if (u < 0) u += w;
-	if (v < 0) v += h;
-	int ru = (int)u;
-	int rv = (int)v;
-	//if (v * w + u > w * h || v * w + u < 0)
-	//	cerr << ru << " , " << rv << " : " << u << " , " << v << " from: " << _u << "  ," << _v << "\n";
-	return opacity[v * w + u];
-}*/
+unsigned int Texture::getColorBilinearTargeted(unsigned int* tgt, int ww, int hh, float _u, float _v) {
+	//project into texture dimensions
+	float u = (_u * ww) - 0.5f;
+	float v = ((1 - _v) * hh) - 0.5f;
+	u -= floor(u / ww)*ww;
+	v -= floor(v / hh)*hh;
+	//round down
+	int l = floor(u);
+	int b = floor(v);
+	int r = l + 1;
+	int t = b + 1;
+	//compute differences
+	float dl = 1 - (u - l);
+	float dr = 1 - (r - u);
+	float db = 1 - (v - b);
+	float dt = 1 - (t - v);
+	//check exceeding
+	l -= floor(l / ww)*ww;
+	r -= floor(r / ww)*ww;
+	b -= floor(b / hh)*hh;
+	t -= floor(t / hh)*hh;
+	//get colors
+	V3 lt = V3(tgt[t*ww + l]);
+	V3 rt = V3(tgt[t*ww + r]);
+	V3 lb = V3(tgt[b*ww + l]);
+	V3 rb = V3(tgt[b*ww + r]);
+	//interpolate
+	V3 top = (lt*dl) + (rt*dr);
+	V3 bot = (lb*dl) + (rb*dr);
+	V3 col = (top*dt) + (bot*db);
+	//
+	return col.getColor();
+}
 
-///*int left = clampCoordinate(_u, -0.5f, w);
-//	int right = clampCoordinate(_u, 0.5f, w);
-//	int bot = clampCoordinate(_v, -0.5f, h);
-//	int top = clampCoordinate(_v, 0.5f, h);*/
-//
-//	/*int u = ((int)(_u*(w - 1))) % w;
-//	int v = ((int)((1 - _v)*(h - 1))) % h;
-//	if (u < 0) u += w;
-//	if (v < 0) v += h;*/
-//
-//float poju = _u * (w - 1);// decimalModulo(_u*(w - 1), w);                                                                                                                                                                                                                         (_u*(w - 1), w);
-//float pojv = _v * (h - 1);// decimalModulo(_v*(h - 1), h);
-//
-//int left = (int)floor(poju - 0.5f);
-//int right = left + 1;//(int)(poju + 0.5f);
-//int bot = (int)floor(pojv - 0.5f);
-//int top = bot + 1;// (int)(pojv + 0.5f);
-//
-//if (poju >= w)
-//cerr << poju << " from: " << w << "\n";
-//
-//float lweight = 1 - (poju - (float)left);
-//float rweight = 1 - lweight;//1 - ((float)right - poju);
-//float bweight = 1 - (pojv - (float)bot);
-//float tweight = 1 - bweight;//1 - ((float)top - pojv);
-///*float lweight = 0.4f;
-//float rweight = 0.6f;
-//float bweight = 0.4f;
-//float tweight = 0.6f;*/
-//
-////cerr << (right - left) << " - " << (top - bot) << "\n";
-////cerr << (lweight+ rweight) << " - " << (bweight + tweight) << "\n";
-//
-//if (left < 0) left = w - 1;
-//if (bot < 0) bot = w - 1;
-//if (right >= w) right = 0;
-//if (top >= h) top = 0;
-//
-//
-//V3 a = V3(pix[bot * w + left]);
-//V3 b = V3(pix[bot * w + right]);
-//V3 c = V3(pix[top * w + left]);
-//V3 d = V3(pix[top * w + right]);
-//
-//V3 intertop = a * lweight + b * rweight;
-//V3 interbot = c * lweight + d * rweight;
-//
-//return (intertop*tweight + interbot * bweight).getColor();
+unsigned int Texture::getColorTrilinear(float _u, float _v, float _depth) {
+	float pick = _depth / mipMapDepth;
+	if (pick < 0) pick = 0;
+	if (pick > 1) pick = 1;
+	pick *= (mipMapDepth-1);
+	int bot = floor(pick);
+	int top = bot + 1;
+	if (top > (mipMapDepth - 1)) top = (mipMapDepth - 1);
+	float diffb = pick - bot;
+	float difft = top - pick;
+	//V3 bcol = V3(getColorBilinearTargeted(mipMap[i - 1], lastside, lastside, (1 + x * 2) / 8.0f, (1 + y * 2) / 8.0f));
+	return 0;
+}
 
-/*
-void Texture::loadTiffTransparency(char* fname) {
-	TIFF* in = TIFFOpen(fname, "r");
-	if (in == NULL) {
-		cerr << fname << " could not be opened" << endl;
-		return;
+//currently only generates power of two square textures
+void Texture::genMipMap(int tiers, float maxdepth) {
+	mipMapDepth = maxdepth;
+	filter = TRILINEAR;
+	mipMapCount = tiers;
+	mipMap.insert(mipMap.end(), pix);
+	int lastside = w;
+	int side = w;
+	for (int i = 1; i < mipMapCount; ++i) {
+		side = sqrt(side);
+		unsigned int* tmppix = new unsigned int[side*side];
+		//
+		for (int y = 0; y < side; ++y) {
+			for (int x = 0; x < side; ++x) {
+				tmppix[y*side+x] = getColorBilinearTargeted(mipMap[i - 1], lastside, lastside, (1 + x * 2) / 8.0f, (1 + y * 2) / 8.0f);
+			}
+		}
+		//
+		mipMap.insert(mipMap.end(), tmppix);
+		lastside = side;
 	}
-
-	int width, height;
-	TIFFGetField(in, TIFFTAG_IMAGEWIDTH, &width);
-	TIFFGetField(in, TIFFTAG_IMAGELENGTH, &height);
-	if (opacity == NULL) {
-		delete[] opacity;
-		opacity = new float[w*h];
-		//clean up tmp
-	}
-	unsigned int* tmp = new unsigned int[w*h];
-
-	if (TIFFReadRGBAImage(in, w, h, tmp, 0) == 0) {
-		cerr << "failed to load " << fname << endl;
-	}
-
-	for (int i = 0; i < w*h; ++i) {
-		V3 tmppixel(tmp[i]);
-		opacity[i] = (tmppixel[0] + tmppixel[1] + tmppixel[2]) / 3;
-	}
-
-	TIFFClose(in);
-	delete[] tmp;
-}*/
+}
 
 // load a tiff image in grayscale to determine opacity.
 void Texture::loadTiff(char* fname) {
