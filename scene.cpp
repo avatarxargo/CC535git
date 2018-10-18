@@ -75,22 +75,38 @@ Scene::Scene() {
 
 	tiles = new Material("tex/tiles.tif");
 	tiles->getDiffuse()->genMipMap(5,2000);
-	p0 = new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1);
-	p1 = new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
-	p0b = new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1b);
-	p1b = new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh);
-	p2 = new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2);
-	p2b = new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2b);
-	floor = new Plane(V3(0, -50, 0), V3(150, 0, 0), V3(0, 0, -150), tstbil);
-	phamster = new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster);
-	phamsterb = new Plane(V3(-500, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), hamsterBil);
-	tstplane = new Plane(V3(-750, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), tst);
-	tstplanebil = new Plane(V3(-750, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), tstbil);
-	phamsterb->setUV(3, 3);
+	//p0 = 
+	addRenderable(new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1));
+	//p1 = 
+	addRenderable(new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh));
+	//p0b = 
+	addRenderable(new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1b));
+	//p1b = 
+	addRenderable(new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh));
+	//p2 = 
+	addRenderable(new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2));
+	//p2b =
+	addRenderable(new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2b));
+	//floor = 
+	addRenderable(new Plane(V3(0, -50, 0), V3(150, 0, 0), V3(0, 0, -150), tstbil));
+	//phamster = 
+	addRenderable(new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster));
+	//phamsterb = 
+	addRenderable(new Plane(V3(-500, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), hamsterBil));
+	((Plane*)getLastRenderable())->setUV(3, 3);
+	//tstplane = 
+	addRenderable(new Plane(V3(-750, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), tst));
+	((Plane*)getLastRenderable())->setUV(2, 2);
+	//tstplanebil = 
+	addRenderable(new Plane(V3(-750, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), tstbil));
+	((Plane*)getLastRenderable())->setUV(2, 2);
+	/*phamsterb->setUV(3, 3);
 	tstplane->setUV(2, 2);
-	tstplanebil->setUV(2, 2);
-	groundMesh = new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles);
-	groundMesh->setUV(20, 10);
+	tstplanebil->setUV(2, 2);*/
+	//groundMesh = 
+	addRenderable(new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles));
+	((Plane*)getLastRenderable())->setUV(20, 10);
+	//groundMesh->setUV(20, 10);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
@@ -117,7 +133,21 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	Render();
 
-	DBG();
+	Run();
+}
+
+Renderable* Scene::getLastRenderable() {
+	return objects[objects.size()-1];
+}
+
+void Scene::addRenderable(Renderable* renderable) {
+	objects.insert(objects.end(), renderable);
+}
+
+void Scene::renderSceneObjects(PPC* ppc, FrameBuffer* fb) {
+	for (int i = 0; i < objects.size() - 1; ++i) {
+		objects[i]->draw(ppc, fb);
+	}
 }
 
 V3 pos = V3(1, -1, -10);
@@ -178,7 +208,8 @@ void Scene::Render() {
 	//p0b->drawScreenspace(camera, fb);
 	//p1b->drawScreenspace(camera, fb);
 	//cerr << "here\n";
-	groundMesh->draw(camera, fb);
+	renderSceneObjects(camera,fb);
+	/*groundMesh->draw(camera, fb);
 	floor->draw(camera, fb);
 	p0->draw(camera, fb);
 	p1->draw(camera, fb);
@@ -187,7 +218,7 @@ void Scene::Render() {
 	phamster->draw(camera, fb);
 	phamsterb->draw(camera, fb);
 	tstplane->draw(camera, fb);
-	tstplanebil->draw(camera, fb);
+	tstplanebil->draw(camera, fb);*/
 
 	//grid
 	drawGrid();
@@ -386,7 +417,20 @@ void Scene::cameraControlFPS() {
 	fb->input(11, 0);
 }
 
+void Scene::Run() {
+	while (fpsConrols) {
+		//move camera
+		cameraControlFPS();
+		//animate scene
+		animateScene();
+
+		Render();
+		Fl::check();
+	}
+}
+
 void Scene::DBG() {
+	fpsConrols = false;
 	//Scene &me = *this;
 	//std::thread updloop(updateLoop, me, fb);
 	//updloop.detach();
@@ -395,7 +439,10 @@ void Scene::DBG() {
 	Quaternion q1(0.5f, 1, 0, 0);
 	cerr << vtorotate << " rotates to " << q1.rotateVectorAboutAngleAndAxis(vtorotate) << endl;*/
 
-	//cinematicCamera(true);
+	cinematicCamera(true);
+
+	fpsConrols = true;
+	return;
 
 	while(true) {
 

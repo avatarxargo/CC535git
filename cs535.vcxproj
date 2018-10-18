@@ -111,6 +111,7 @@
     <ClInclude Include="plane.h" />
     <ClInclude Include="ppc.h" />
     <ClInclude Include="quat.h" />
+    <ClInclude Include="renderable.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="tm.h" />

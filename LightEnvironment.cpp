@@ -16,7 +16,7 @@ V3 LightEnvironment::getLightingAtVertex(Material* mat, V3 point, V3 uvw, V3 nor
 	//normalize more efficiently:
 	lightDirection = lightDirection.norm();
 	float specularPower = mat->getSpecularPower();
-	V3 diff = V3(mat->getDiffuse()->getColor(uvw));
+	V3 diff = mat->getDiffuse()->getColorV3(uvw);
 	V3 specularCol = V3(5, 1, 1);// true ? V3(0, 0, 0) : V3(mat->getSpecular()->getColor(uvw[0], uvw[1]));
 	//
 	if (distance > lights[0]->rangeMax) {

@@ -670,7 +670,7 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 			if (opaque) {
 				setZ(u, v, 1 / w, col.getColor());
 			} else {
-				float alpha = V3(mat->getOpacity()->getColorNearest(localCoord[0], localCoord[1]))[0];
+				float alpha = mat->getOpacity()->getColorNearestV3(localCoord[0], localCoord[1])[0];
 				setZBlend(u, v, 1 / w, col.getColor(), alpha);
 			}
 		}

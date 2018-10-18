@@ -11,8 +11,9 @@
 #include "quat.h"
 #include "aabb.h"
 #include "framebuffer.h"
+#include "renderable.h"
 
- class TriangleMesh
+ class TriangleMesh : public Renderable
  {
  public:
 	V3 *verts, *colors, *normals;
@@ -42,6 +43,11 @@
 	void renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture *tex);
 	void renderFillTexturedLit(PPC * ppc, FrameBuffer *fb, Material *mat);
 	void renderFillClip(PPC *ppc, FrameBuffer *fb);
+	//from renderable
+	void drawUnlit(PPC* ppc, FrameBuffer* fb);
+	void drawPerspective(PPC* ppc, FrameBuffer* fb);
+	void drawuv(PPC* ppc, FrameBuffer* fb);
+	void drawScreenspace(PPC* ppc, FrameBuffer* fb);
 	//
 	void SetRectangle(V3 O, float rw, float rh);
 	V3 getCenterOfMass();

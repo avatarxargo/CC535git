@@ -7,7 +7,8 @@
  */
 
 Plane::Plane(V3 centre, V3 up, V3 left, Material* _mat) {
-	mat = _mat;
+	//mat = _mat;
+	setMaterial(_mat);
 	a = centre + up + left;
 	b = centre + up - left;
 	c = centre - up + left;
@@ -17,19 +18,19 @@ Plane::Plane(V3 centre, V3 up, V3 left, Material* _mat) {
 }
 
 void Plane::drawUnlit(PPC* ppc, FrameBuffer* fb) {
-	fb->draw3DTriangleTextured(c, uvc, b, uvb, a, uva, ppc, mat);
-	fb->draw3DTriangleTextured(c, uvc, d, uvd, b, uvb, ppc, mat);
+	fb->draw3DTriangleTextured(c, uvc, b, uvb, a, uva, ppc, getMaterial());
+	fb->draw3DTriangleTextured(c, uvc, d, uvd, b, uvb, ppc, getMaterial());
 }
 
-void Plane::draw(PPC* ppc, FrameBuffer* fb) {
+void Plane::drawPerspective(PPC* ppc, FrameBuffer* fb) {
 	fb->lightEnvironment->setCameraPos(ppc->pos);
-	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, mat);
-	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, mat);
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, getMaterial());
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, getMaterial());
 }
 
 void Plane::drawScreenspace(PPC* ppc, FrameBuffer* fb) {
-	fb->draw3DTriangleTexturedScreenspace(c, uvc, b, uvb, a, uva, ppc, mat);
-	fb->draw3DTriangleTexturedScreenspace(c, uvc, d, uvd, b, uvb, ppc, mat);
+	fb->draw3DTriangleTexturedScreenspace(c, uvc, b, uvb, a, uva, ppc, getMaterial());
+	fb->draw3DTriangleTexturedScreenspace(c, uvc, d, uvd, b, uvb, ppc, getMaterial());
 }
 
 void Plane::drawuv(PPC* ppc, FrameBuffer* fb) {

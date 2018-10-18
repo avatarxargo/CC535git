@@ -182,6 +182,12 @@ void TriangleMesh::position(V3 position, float _scale) {
 	scale(ratio);
 }
 
+
+void TriangleMesh::drawUnlit(PPC* ppc, FrameBuffer* fb) {}
+void TriangleMesh::drawPerspective(PPC* ppc, FrameBuffer* fb) {}
+void TriangleMesh::drawuv(PPC* ppc, FrameBuffer* fb) {}
+void TriangleMesh::drawScreenspace(PPC* ppc, FrameBuffer* fb) {}
+
 void TriangleMesh::LoadBin(char *fname) {
 
 	ifstream ifs(fname, ios::binary);
