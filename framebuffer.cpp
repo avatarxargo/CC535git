@@ -598,9 +598,10 @@ void FrameBuffer::draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2,
 	}
 }
 
+V3 pp1, pp2, pp3, v1, v2, v3, C;
+int ui0, vi0, ui1, vi1, ui2, vi2, umin, vmin, umax, vmax;
 void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat) {
 	//check whether all vertexes are within projection plane
-	V3 pp1, pp2, pp3;
 	if (!camera->project(point1, pp1))
 		return;
 	if (!camera->project(point2, pp2))
@@ -609,38 +610,39 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 		return;
 
 	//round to int
-	int ui0 = floorf(pp1[0] + 0.5);
-	int vi0 = floorf(pp1[1] + 0.5);
-	int ui1 = floorf(pp2[0] + 0.5);
-	int vi1 = floorf(pp2[1] + 0.5);
-	int ui2 = floorf(pp3[0] + 0.5);
-	int vi2 = floorf(pp3[1] + 0.5);
+	ui0 = floorf(pp1[0] + 0.5);
+	vi0 = floorf(pp1[1] + 0.5);
+	ui1 = floorf(pp2[0] + 0.5);
+	vi1 = floorf(pp2[1] + 0.5);
+	ui2 = floorf(pp3[0] + 0.5);
+	vi2 = floorf(pp3[1] + 0.5);
 
 	//clamping
-	int umin = fminf(ui2, fminf(ui0, ui1)) - 1;
-	int vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
-	int umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
-	int vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
+	umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
 	if (umin < 0) { umin = 0; }
 	if (vmin < 0) { vmin = 0; }
 	if (umax > w - 1) { umax = w - 1; }
 	if (vmax > h - 1) { vmax = h - 1; }
 
 	//initialize projection matrix
-	V3 a = camera->horizontal;
+	/*V3 a = camera->horizontal;
 	V3 b = camera->vertical;
-	V3 c = camera->topleft;
-	V3 v1 = point1;
-	V3 v2 = point2;
-	V3 v3 = point3;
-	V3 C = camera->pos;
-	M33 abc(a, b, c);
-	abc = abc.transpose();
+	V3 c = camera->topleft;*/
+	v1 = point1;
+	v2 = point2;
+	v3 = point3;
+	C = camera->pos;
+	//M33 abc(a, b, c);
+	//M33 abc(camera->horizontal, camera->vertical, camera->topleft);
+	//abc = abc.transpose();
 	M33 q = M33(v1 - C, v2 - C, v3 - C).transpose();
 	M33 qinv;
 	if (!q.inverse(&qinv))
 		return;
-	q = qinv * abc;
+	q = qinv * camera->getABC();//abc
 
 	bool opaque = !(mat->opacity);
 	

@@ -234,7 +234,9 @@ V3 Texture::getColorBilinearTargetedV3(V3* tgt, int ww, int hh, float _u, float 
 }
 
 V3 Texture::getColorTrilinearV3(float _u, float _v, float _depth) {
-	float pick = _depth / mipMapDepth;
+	float pick = _depth / 1;// mipMapDepth;
+	if(_depth>0)
+	cout << _depth << endl;
 	if (pick < 0) pick = 0;
 	if (pick > 1) pick = 1;
 	pick *= (mipMapDepth - 1);
@@ -243,6 +245,8 @@ V3 Texture::getColorTrilinearV3(float _u, float _v, float _depth) {
 	if (top > (mipMapDepth - 1)) top = (mipMapDepth - 1);
 	float diffb = pick - bot;
 	float difft = top - pick;
+	top = 1;
+	bot = 1;
 	V3 bcol = getColorBilinearTargetedV3(mipMapV3[bot], mipMapSides[bot], mipMapSides[bot], _u, _v);
 	V3 tcol = getColorBilinearTargetedV3(mipMapV3[top], mipMapSides[top], mipMapSides[top], _u, _v);
 	return (bcol * difft + tcol * diffb);
@@ -269,6 +273,30 @@ void Texture::genMipMap(int tiers, float maxdepth) {
 		}
 		//
 		mipMap.insert(mipMap.end(), tmppix);
+		lastside = side;
+	}
+}
+
+void Texture::genMipMapV3(int tiers, float maxdepth) {
+	mipMapDepth = maxdepth;
+	filter = TRILINEAR;
+	mipMapCount = tiers;
+	mipMapV3.insert(mipMapV3.end(), pixv);
+	int lastside = w;
+	int side = w;
+	mipMapSides.insert(mipMapSides.end(), side);
+	for (int i = 1; i < mipMapCount; ++i) {
+		side = sqrt(side);
+		mipMapSides.insert(mipMapSides.end(), side);
+		V3* tmppix = new V3[side*side];
+		//
+		for (int y = 0; y < side; ++y) {
+			for (int x = 0; x < side; ++x) {
+				tmppix[y*side + x] = V3(i % 3 == 0, i % 3 == 1, i % 3 == 2);//getColorBilinearTargetedV3(mipMapV3[i - 1], lastside, lastside, (1 + x * 2) / 8.0f, (1 + y * 2) / 8.0f);
+			}
+		}
+		//
+		mipMapV3.insert(mipMapV3.end(), tmppix);
 		lastside = side;
 	}
 }

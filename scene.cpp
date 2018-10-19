@@ -18,8 +18,8 @@ Scene::Scene() {
 
 	int u0 = 20;
 	int v0 = 20;
-	int w = 1280;
-	int h = 720;
+	int w = 680;//1280;
+	int h = 420;//720;
 
 	camera = new PPC(60, w, h);
 	camera->pos = camera->pos + V3(0, 50, 0);
@@ -74,7 +74,7 @@ Scene::Scene() {
 	wood2b->getDiffuse()->setFilter(BILINEAR);
 
 	tiles = new Material("tex/tiles.tif");
-	tiles->getDiffuse()->genMipMap(5,2000);
+	tiles->getDiffuse()->genMipMapV3(5,2000);
 	//p0 = 
 	addRenderable(new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1));
 	//p1 = 
@@ -106,6 +106,8 @@ Scene::Scene() {
 	//groundMesh = 
 	addRenderable(new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles));
 	((Plane*)getLastRenderable())->setUV(20, 10);
+
+	addRenderable(new Plane(V3(-750, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), tst));
 	//groundMesh->setUV(20, 10);
 	/*for (float f = -2.6f; f < 2.6f; f += 0.01f) {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
@@ -171,6 +173,10 @@ void updateLoop(Scene& scn, FrameBuffer* fb)
 }
 
 void Scene::Render() {
+	camera->genABC();
+	cam1->genABC();
+	cam2->genABC();
+	cam3->genABC();
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
 	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));

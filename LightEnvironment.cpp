@@ -8,38 +8,41 @@ void LightEnvironment::setCameraPos(V3 pos) {
 	cameraPos = pos;
 }
 
+V3 color, viewDirection, lightDirection, diff, specularCol, halfway, diffLight;
+float distanced, specularPower, diffStrength, specularStrength, lightStrength;
+
 V3 LightEnvironment::getLightingAtVertex(Material* mat, V3 point, V3 uvw, V3 normal) {
-	V3 color;
-	V3 viewDirection = (cameraPos-point).norm();
-	V3 lightDirection = lights[0]->position - point;
-	float distance = lightDirection.len();
+	//V3 color;
+	viewDirection = (cameraPos-point).norm();
+	lightDirection = lights[0]->position - point;
+	distanced = lightDirection.len();
 	//normalize more efficiently:
 	lightDirection = lightDirection.norm();
-	float specularPower = mat->getSpecularPower();
-	V3 diff = mat->getDiffuse()->getColorV3(uvw);
-	V3 specularCol = V3(5, 1, 1);// true ? V3(0, 0, 0) : V3(mat->getSpecular()->getColor(uvw[0], uvw[1]));
+	specularPower = mat->getSpecularPower();
+	diff = mat->getDiffuse()->getColorV3(uvw);
+	specularCol = V3(5, 1, 1);// true ? V3(0, 0, 0) : V3(mat->getSpecular()->getColor(uvw[0], uvw[1]));
 	//
-	if (distance > lights[0]->rangeMax) {
+	if (distanced > lights[0]->rangeMax) {
 		color =
 			diff ^ ambientLight->color;
 		//cerr << "diff: "<<diff << " , amvient " << ambientLight->color << " color: " << color << "\n";
 	}
-	else if (distance < lights[0]->rangeStart) {
-		float diffStrength = fmaxf(lightDirection * normal, 0);
-		V3 halfway = (lightDirection + viewDirection).norm();
-		float specularStrength = fmaxf(powf(halfway * normal,40/*mat->getSpecularPower()*/), 0);
-		V3 diffLight = ambientLight->color + lights[0]->color * diffStrength;
+	else if (distanced < lights[0]->rangeStart) {
+		diffStrength = fmaxf(lightDirection * normal, 0);
+		halfway = (lightDirection + viewDirection).norm();
+		specularStrength = fmaxf(powf(halfway * normal,40/*mat->getSpecularPower()*/), 0);
+		diffLight = ambientLight->color + lights[0]->color * diffStrength;
 		color =
 			diff ^ diffLight.clamp() +
 			specularCol * specularStrength;
 	}
 	else {
-		float lightStrength = (1 - ((distance - lights[0]->rangeStart) / (lights[0]->diff)));
+		lightStrength = (1 - ((distanced - lights[0]->rangeStart) / (lights[0]->diff)));
 		//
-		float diffStrength = fmaxf(lightDirection * normal, 0);
-		V3 halfway = (lightDirection + viewDirection).norm();
-		float specularStrength = lightStrength * fmaxf(powf(halfway * normal, 40/*mat->getSpecularPower()*/), 0);
-		V3 diffLight = ambientLight->color + lights[0]->color * lightStrength * diffStrength;
+		diffStrength = fmaxf(lightDirection * normal, 0);
+		halfway = (lightDirection + viewDirection).norm();
+		specularStrength = lightStrength * fmaxf(powf(halfway * normal, 40/*mat->getSpecularPower()*/), 0);
+		diffLight = ambientLight->color + lights[0]->color * lightStrength * diffStrength;
 		color =
 			diff ^ diffLight.clamp() +
 			specularCol * specularStrength;
