@@ -679,6 +679,14 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 	}
 }
 
+void FrameBuffer::displayShadowMap(ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir) {
+	//tmp
+	for (int i = 0; i < sm->mapRes; ++i) {
+		for (int j = 0; j < sm->mapRes; ++j) {
+			Set(i,j,V3(sm->dirDepthMaps[shadowDir][i*sm->mapRes+j],0,0).getColor());
+		}
+	}
+}
 
 void FrameBuffer::addLight(Light* l) {
 	lightEnvironment->addLight(l);

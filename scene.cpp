@@ -120,6 +120,8 @@ Scene::Scene() {
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 400, 600);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
+	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 100);
+
 	fb->show();
 
 	if (vizcamena) {
@@ -177,9 +179,12 @@ void Scene::Render() {
 	cam1->genABC();
 	cam2->genABC();
 	cam3->genABC();
+	// lightmap
+	//tstShadow->render();
+	//
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
-	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
+	//fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
 	//fb->lightEnvironment->lights[0]->position = camera->pos;
 
 	//fb->drawRect(50, 100, 300, 150, 0xFF550066);
@@ -243,6 +248,7 @@ void Scene::Render() {
 	}
 	   	 	
 	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
+	fb->displayShadowMap(tstShadow, ShadowMapNS::NORTH);
 	fb->redraw();
 	Fl::check();
 }

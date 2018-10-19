@@ -131,6 +131,8 @@
     <ClCompile Include="ppc.cpp" />
     <ClCompile Include="quat.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="shadowmap.cpp" />
+    <ClCompile Include="shadowmap.h" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="tm.cpp" />
     <ClCompile Include="v3.cpp" />
