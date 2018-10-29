@@ -54,4 +54,6 @@
 	//
 	void allocate();
 	void rotateAboutAxis(V3 O, V3 a, float angled);
+	//
+	void RayTrace(PPC *ppc, FrameBuffer* fb);
  };

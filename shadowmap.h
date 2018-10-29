@@ -34,8 +34,10 @@ namespace ShadowMapNS {
 		//updates the shadowmap values
 		void clearDepth();
 		//for given point, returns how lit it is.
+		ShadowDir getMapColorCoding(V3 point);
 		float getMapValue(V3 point/*, PPC* cam1*/);
 		float getMapValueDir(ShadowDir dir, V3 ptr/*, PPC* cam1, V3 uvw1*/);
+		V3 dirToColor(ShadowDir dir);
 		//renders a triangle onto the dirDepthMap selected
 		void drawPlane(Plane* plane);
 		//void drawTM(TriangleMesh* tm);

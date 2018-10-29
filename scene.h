@@ -41,6 +41,7 @@ public:
 	void addRenderable(Renderable* renderable);
 	void renderSceneObjects(PPC* ppc, FrameBuffer* fb);
 	void renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb);
+	void RayTrace();
 };
 
 extern Scene *scene;

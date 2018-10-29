@@ -258,3 +258,38 @@ void TriangleMesh::LoadBin(char *fname) {
 	//delete[]tcs;
 
 }
+
+
+void TriangleMesh::RayTrace(PPC *ppc, FrameBuffer* fb) {
+
+	for (int v = 0; v < fb->h; v++) {
+		for (int u = 0; u < fb->h; u++) {
+			V3 ray = ppc->pos + ppc->horizontal*((float)u + 0.5f) +
+				ppc->vertical*((float)v + 0.5f);
+			V3 O = ppc->pos;
+			for (int tri = 0; tri < trisN; ++tri) {
+				M33 M;
+				M.setColumn(0, verts[tris[3 * tri + 0]]);
+				M.setColumn(1, verts[tris[3 * tri + 1]]);
+				M.setColumn(2, verts[tris[3 * tri + 2]]);
+				M.inverse(&M);
+				V3 q2 = M * O;
+				V3 q3 = M * ray;
+				float w = (1 - q2[0] - q2[1] - q2[2]) / (q3[0] + q3[1] + q3[2]);
+				V3 abc = q2 + q3 * w;
+				if (abc[0] < 0.0f || abc[1] < 0.0f || abc[2] < 0.0f)
+					continue;
+				if (!fb->Visible(u, v, 1.0f / w))
+					continue;
+				V3 currCol =
+					colors[tris[3 * tri + 0]] * abc[0] +
+					colors[tris[3 * tri + 1]] * abc[1] +
+					colors[tris[3 * tri + 2]] * abc[2];
+				fb->Set(u, v, currCol.getColor());
+			}
+		}
+		fb->drawRect(0, v + 1, fb->w - 1, v + 1, 0xFF0000FF);
+		fb->redraw();
+		Fl::check();
+	}
+}

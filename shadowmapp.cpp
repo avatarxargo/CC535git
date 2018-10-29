@@ -211,6 +211,49 @@ namespace ShadowMapNS {
 		return depthdist;
 	}
 
+	ShadowDir ShadowMap::getMapColorCoding(V3 point) {
+		dir = point - pos;
+		normdir = dir.norm();
+		float dist = dir.len();
+		//45 deg in radians = 0.785398
+		//cos(45) = 0.52532198881;
+		//cos > 0.52532198881 - ok
+		//test each major direction for dot product - cos of angle
+		if (normdir*V3(1, 0, 0) > coslim) {
+			return NORTH;
+		}
+		else if (normdir*V3(-1, 0, 0) > coslim) {
+			return SOUTH;
+		}
+		else if (normdir*V3(0, 1, 0) > coslim) {
+			return TOP;
+		}
+		else if (normdir*V3(0, -1, 0) > coslim) {
+			return BOT;
+		}
+		else if (normdir*V3(0, 0, 1) > coslim) {
+			return EAST;
+		}
+		return WEST;
+	}
+
+	V3 ShadowMap::dirToColor(ShadowDir dir) {
+		switch (dir) {
+		case NORTH:
+			return V3(1, 0, 0);
+		case EAST:
+			return V3(1, 1, 0);
+		case WEST:
+			return V3(0, 1, 1);
+		case SOUTH:
+			return V3(1, 0, 1);
+		case TOP:
+			return V3(0, 1, 0);
+		case BOT:
+			return V3(0, 0, 1);
+		}
+	}
+
 	void ShadowMap::setPos(V3 _pos) {
 		pos = _pos;
 		dirCameras[TOP]->pos = pos;

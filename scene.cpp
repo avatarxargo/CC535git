@@ -348,6 +348,11 @@ void Scene::animateScene() {
 	tm5->rotateAboutAxis(V3(0,0,0), V3(0, 1, 0), 9);*/
 }
 
+void Scene::RayTrace() {
+	fb->refreshDepth(0);
+	tm1->RayTrace(camera, fb);
+}
+
 void Scene::cinematicCamera(bool save) {
 	cam1->loadFromFile("mydbg/cam1.txt");
 	cam2->loadFromFile("mydbg/cam2.txt");
@@ -465,6 +470,7 @@ void Scene::cameraControlFPS() {
 }
 
 void Scene::Run() {
+	//RayTrace();
 	while (fpsConrols) {
 		//move camera
 		cameraControlFPS();
