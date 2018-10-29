@@ -113,7 +113,7 @@ Scene::Scene() {
 		float delta = 100;
 		for (int i = 0; i < 20; ++i) {
 			for (int j = 0; j < 20; ++j) {
-				addRenderable(new Plane(V3(startoff+delta*i, -51, startoff + delta * j), V3(delta / 2, 0, 0), V3(0, 0, delta / 2), wood2b));
+				addRenderable(new Plane(V3(startoff+delta*i, -51, startoff + delta * j), V3(-delta / 2, 0, 0), V3(0, 0, delta / 2), wood2b));
 			}
 		}
 	}
@@ -129,7 +129,7 @@ Scene::Scene() {
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
 	Light* ambientl = new Light(V3(0.1, 0.1, 0.2));
-	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 900, 1600);
+	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
 	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 100);
@@ -150,7 +150,7 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	Render();
 
-	Save();
+	Run();
 }
 
 Renderable* Scene::getLastRenderable() {

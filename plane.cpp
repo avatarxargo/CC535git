@@ -24,8 +24,8 @@ void Plane::drawUnlit(PPC* ppc, FrameBuffer* fb) {
 
 void Plane::drawPerspective(PPC* ppc, FrameBuffer* fb) {
 	fb->lightEnvironment->setCameraPos(ppc->pos);
-	fb->draw3DTriangleTexturedLitShadow(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, getMaterial());
-	fb->draw3DTriangleTexturedLitShadow(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, getMaterial());
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, b, uvb, nb, a, uva, na, ppc, getMaterial());
+	fb->draw3DTriangleTexturedLit(c, uvc, nc, d, uvd, nd, b, uvb, nb, ppc, getMaterial());
 }
 
 void Plane::drawScreenspace(PPC* ppc, FrameBuffer* fb) {

@@ -72,6 +72,9 @@
     <ClInclude Include="renderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="interpol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene.cpp">

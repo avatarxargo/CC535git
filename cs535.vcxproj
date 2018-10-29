@@ -103,6 +103,7 @@
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
+    <ClInclude Include="interpol.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightEnvironment.h" />
     <ClInclude Include="m33.h" />
