@@ -9,7 +9,6 @@
 #include "plane.h"
 #include "lightEnvironment.h"
 #include "material.h"
-#include "shadowmap.h"
 //Still broken... no documentation for their stupid library.
 //#include "VideoCapturePlus.h"
 #include <fstream>
@@ -41,6 +40,7 @@ public:
 	Renderable* getLastRenderable();
 	void addRenderable(Renderable* renderable);
 	void renderSceneObjects(PPC* ppc, FrameBuffer* fb);
+	void renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb);
 };
 
 extern Scene *scene;

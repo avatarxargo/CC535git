@@ -2,6 +2,7 @@
 #include "v3.h"
 #include "m33.h"
 #include <stdlib.h>
+#include "shadowmap.h"
 
 Scene *scene;
 
@@ -18,12 +19,12 @@ Scene::Scene() {
 
 	int u0 = 20;
 	int v0 = 20;
-	int w = 680;//1280;
-	int h = 420;//720;
+	int w = 1280;// 680;//1280;
+	int h = 720;// 420;//720;
 
 	camera = new PPC(60, w, h);
 	camera->pos = camera->pos + V3(0, 50, 0);
-	camera->loadFromFile("mydbg/cameraInfo.txt");
+	//camera->loadFromFile("mydbg/cameraInfo.txt");
 	cam1 = new PPC(60, w, h);
 	cam2 = new PPC(60, w, h);
 	cam3 = new PPC(60, w, h);
@@ -70,6 +71,7 @@ Scene::Scene() {
 	mesh->getDiffuse()->setFilter(BILINEAR);
 	hamsterBil->getDiffuse()->setFilter(BILINEAR);
 	rikako->getDiffuse()->setFilter(BILINEAR);
+	rikako->getDiffuse()->setFilter(BILINEAR);
 	wood1b->getDiffuse()->setFilter(BILINEAR);
 	wood2b->getDiffuse()->setFilter(BILINEAR);
 
@@ -104,8 +106,18 @@ Scene::Scene() {
 	tstplane->setUV(2, 2);
 	tstplanebil->setUV(2, 2);*/
 	//groundMesh = 
-	addRenderable(new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles));
-	((Plane*)getLastRenderable())->setUV(20, 10);
+	//addRenderable(new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles));
+	//((Plane*)getLastRenderable())->setUV(20, 10);
+	{
+		float startoff = -1000;
+		float delta = 100;
+		for (int i = 0; i < 20; ++i) {
+			for (int j = 0; j < 20; ++j) {
+				addRenderable(new Plane(V3(startoff+delta*i, -51, startoff + delta * j), V3(delta / 2, 0, 0), V3(0, 0, delta / 2), wood2b));
+			}
+		}
+	}
+
 
 	addRenderable(new Plane(V3(-750, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), tst));
 	//groundMesh->setUV(20, 10);
@@ -117,10 +129,11 @@ Scene::Scene() {
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
 	Light* ambientl = new Light(V3(0.1, 0.1, 0.2));
-	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 400, 600);
+	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 900, 1600);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
 	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 100);
+	fb->lightEnvironment->shadowMap = tstShadow;
 
 	fb->show();
 
@@ -137,7 +150,7 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	Render();
 
-	Run();
+	Save();
 }
 
 Renderable* Scene::getLastRenderable() {
@@ -151,6 +164,12 @@ void Scene::addRenderable(Renderable* renderable) {
 void Scene::renderSceneObjects(PPC* ppc, FrameBuffer* fb) {
 	for (int i = 0; i < objects.size() - 1; ++i) {
 		objects[i]->draw(ppc, fb);
+	}
+}
+
+void Scene::renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb) {
+	for (int i = 0; i < objects.size() - 1; ++i) {
+		tstShadow->drawPlane((Plane*)objects[i]);
 	}
 }
 
@@ -174,7 +193,10 @@ void updateLoop(Scene& scn, FrameBuffer* fb)
 	}
 }
 
+float timer = 0;
 void Scene::Render() {
+	fb->lightEnvironment->lights[0]->position = V3(sinf(timer/5.0f)*50, 100, cosf(timer++ / 5.0f) * 50);
+	((Plane*)objects[8])->translate(V3(0, 0, -1));
 	camera->genABC();
 	cam1->genABC();
 	cam2->genABC();
@@ -184,6 +206,7 @@ void Scene::Render() {
 	//
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
+	tstShadow->clearDepth();
 	//fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
 	//fb->lightEnvironment->lights[0]->position = camera->pos;
 
@@ -219,7 +242,8 @@ void Scene::Render() {
 	//p0b->drawScreenspace(camera, fb);
 	//p1b->drawScreenspace(camera, fb);
 	//cerr << "here\n";
-	renderSceneObjects(camera,fb);
+	renderSceneObjectsShadow(camera, fb);
+	renderSceneObjects(camera, fb);
 	/*groundMesh->draw(camera, fb);
 	floor->draw(camera, fb);
 	p0->draw(camera, fb);
@@ -247,8 +271,19 @@ void Scene::Render() {
 		subfb->redraw();
 	}
 	   	 	
-	fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
-	fb->displayShadowMap(tstShadow, ShadowMapNS::NORTH);
+	fb->fog(0.5f, 2.5f, V3(0.8, 0.8, 1));
+	tstShadow->setPos(fb->lightEnvironment->lights[0]->position);
+	V3 tstPointer = V3(0, 400, 0);
+	tstShadow->getMapValue(tstPointer);
+	tstShadow->renderBB(camera,fb);
+	fb->draw3DSegment(camera->pos+camera->forward()*5, V3(0.4f, 0, 0.4f), fb->lightEnvironment->lights[0]->position, V3(0.4f, 0, 0.4f), camera);
+	//show miniatures of the depth maps in the top left corner
+	fb->displayShadowMap(0, 0, tstShadow, ShadowMapNS::SOUTH);
+	fb->displayShadowMap(100, 0, tstShadow, ShadowMapNS::EAST);
+	fb->displayShadowMap(0, 100, tstShadow, ShadowMapNS::NORTH);
+	fb->displayShadowMap(100, 100, tstShadow, ShadowMapNS::WEST);
+	fb->displayShadowMap(0, 200, tstShadow, ShadowMapNS::TOP);
+	fb->displayShadowMap(100, 200, tstShadow, ShadowMapNS::BOT);
 	fb->redraw();
 	Fl::check();
 }
@@ -307,10 +342,10 @@ void Scene::animateScene() {
 			dir = true;
 	}
 	//
-	tm2->rotateAboutAxis(tm2->GetCenter(), V3(1, 0, 0), 7);
+	/*tm2->rotateAboutAxis(tm2->GetCenter(), V3(1, 0, 0), 7);
 	tm3->rotateAboutAxis(tm3->GetCenter(), V3(1, 1, 0), 11);
 	tm4->rotateAboutAxis(tm4->GetCenter(), V3(0, 1, 0), 9);
-	tm5->rotateAboutAxis(V3(0,0,0), V3(0, 1, 0), 9);
+	tm5->rotateAboutAxis(V3(0,0,0), V3(0, 1, 0), 9);*/
 }
 
 void Scene::cinematicCamera(bool save) {
@@ -451,7 +486,7 @@ void Scene::DBG() {
 	Quaternion q1(0.5f, 1, 0, 0);
 	cerr << vtorotate << " rotates to " << q1.rotateVectorAboutAngleAndAxis(vtorotate) << endl;*/
 
-	cinematicCamera(true);
+	cinematicCamera(false);
 
 	fpsConrols = true;
 	return;

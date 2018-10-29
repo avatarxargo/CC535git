@@ -19,7 +19,7 @@ class PPC
 {
 public:
 	V3 horizontal, vertical, topleft, pos;
-	M33 abc;
+	M33 abc, abcinv;
 	int w, h;
 	//
 	PPC(float hfov, int _w, int _h);
@@ -47,14 +47,19 @@ public:
 	void setTo(PPC ppc);
 	void lookAt(V3 target);
 	void visualize(PPC* viewer, FrameBuffer* canvas, FrameBuffer* view);
+	void visualize(PPC* viewer, FrameBuffer* view, float scale);
 	V3 up();
 	V3 forward();
 	M33 getABC() {
 		return abc;
 	}
+	M33 getABCinv() {
+		return abcinv;
+	}
 	void genABC() {
 		abc = M33(horizontal, vertical, topleft);
 		abc = abc.transpose();
+		abc.inverse(&abcinv);
 	}
 	void postitionAndOrient(V3 C1, V3 L1, V3 vpv);
 };

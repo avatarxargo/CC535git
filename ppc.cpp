@@ -160,6 +160,19 @@ void PPC::interpolate(PPC* target, PPC* set, float rate) {
 //
 //}
 
+void PPC::visualize(PPC* viewer, FrameBuffer* canvas, float scale) {
+	V3 topv = pos + topleft * scale;
+	//frame
+	canvas->draw3DSegment(pos, V3(1, 1, 1), topv, V3(1, 1, 1), viewer);
+	canvas->draw3DSegment(pos, V3(1, 0, 1), topv + horizontal * w * scale, V3(1, 0, 1), viewer);
+	canvas->draw3DSegment(pos, V3(1, 0, 1), topv + vertical * h * scale, V3(1, 0, 1), viewer);
+	canvas->draw3DSegment(pos, V3(1, 0, 1), topv + (horizontal * w + vertical * h) * scale, V3(1, 0, 1), viewer);
+	canvas->draw3DSegment(topv, V3(1, 1, 0), topv + horizontal * w * scale, V3(1, 1, 0), viewer);
+	canvas->draw3DSegment(topv, V3(1, 1, 0), topv + vertical * h * scale, V3(1, 1, 0), viewer);
+	canvas->draw3DSegment(topv + horizontal * w * scale, V3(1, 1, 0), topv + (horizontal * w + vertical * h) * scale, V3(1, 1, 0), viewer);
+	canvas->draw3DSegment(topv + vertical * h * scale, V3(1, 1, 0), topv + (horizontal * w + vertical * h)  * scale, V3(1, 1, 0), viewer);
+}
+
 void PPC::visualize(PPC* viewer, FrameBuffer* canvas, FrameBuffer* view) {
 	float scale = 0.1;
 	V3 topv = pos + topleft * scale;

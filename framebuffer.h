@@ -57,8 +57,9 @@ public:
 	void draw3DTriangleTexturedScreenspace(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Material* mat);
 	void draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Material* mat);
 	void draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat);
+	void draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat);
 	//visualizes the contents of a shadowMap on a screen.
-	void displayShadowMap(ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir);
+	void displayShadowMap(int x, int y, ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir);
 	//
 	void addLight(Light* l);
 	void removeLight(int idx);

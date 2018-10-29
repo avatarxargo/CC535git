@@ -125,7 +125,7 @@
     <ClCompile Include="shadowmap.h">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="shadowmap.cpp">
+    <ClCompile Include="shadowmapp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -5,11 +5,13 @@
  *	Date:	10/19/2018
  *	Desc:	Looks in 6 directions and casts shadows
  */
-#include "v3.h"
 #include "ppc.h"
 #include "renderable.h"
-#include "plane.h"
-#include "tm.h"
+
+class Plane;
+class V3;
+class TriangleMesh;
+class FrameBuffer;
 
 namespace ShadowMapNS {
 
@@ -31,16 +33,18 @@ namespace ShadowMapNS {
 		//
 		//updates the shadowmap values
 		void clearDepth();
-		//updates the shadowmap values
-		void renderDir(ShadowDir dir, Renderable* scene);
 		//for given point, returns how lit it is.
-		float getMapValue(V3 point);
+		float getMapValue(V3 point/*, PPC* cam1*/);
+		float getMapValueDir(ShadowDir dir, V3 ptr/*, PPC* cam1, V3 uvw1*/);
 		//renders a triangle onto the dirDepthMap selected
 		void drawPlane(Plane* plane);
-		void drawPlane(TriangleMesh* tm);
+		//void drawTM(TriangleMesh* tm);
 		void draw3DTriangleDepth(V3 point1, V3 point2, V3 point3);
-		void draw3DTriangleDepth(ShadowDir dir, V3 point1, V3 point2, V3 point3);
+		bool draw3DTriangleDepth(ShadowDir dir, V3 point1, V3 point2, V3 point3);
 		//resets depth to max
 		void clearDepth(ShadowDir);
+		void setPos(V3 pos);
+		void renderBBDir(ShadowDir dir, PPC* ppc, FrameBuffer* fb);
+		void renderBB(PPC* ppc, FrameBuffer* fb);
 	};
 }

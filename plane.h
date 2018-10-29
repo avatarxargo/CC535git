@@ -23,4 +23,5 @@ public:
 	void drawuv(PPC* ppc, FrameBuffer* fb);
 	void drawScreenspace(PPC* ppc, FrameBuffer* fb);
 	void setUV(int w, int h);
+	void translate(V3 trans);
 };

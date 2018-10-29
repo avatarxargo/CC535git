@@ -4,8 +4,9 @@
 #include "scene.h"
 #include "v3.h"
 #include <iostream>
-
 #include "tiffio.h"
+
+#define MAXDEPTH 10000.0f
 
 using namespace std;
 
@@ -654,7 +655,8 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 			int side2 = u * (vi2 - vi1) - v * (ui2 - ui1) - ui1 * vi2 + vi1 * ui2; //1 2
 			int side3 = u * (vi0 - vi2) - v * (ui0 - ui2) - ui2 * vi0 + vi2 * ui0; //2 0 
 			if (side1 < 0 || side2 < 0 || side3 < 0)
-				continue;
+				if (side1 > 0 || side2 > 0 || side3 > 0)
+					continue;
 			V3 uv1 = V3(u, v, 1);
 			V3 quv1 = (q * uv1);
 			float w = (quv1[0] + quv1[1] + quv1[2]);
@@ -679,11 +681,94 @@ void FrameBuffer::draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 p
 	}
 }
 
-void FrameBuffer::displayShadowMap(ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir) {
+void FrameBuffer::draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat) {
+	//check whether all vertexes are within projection plane
+	if (!camera->project(point1, pp1))
+		return;
+	if (!camera->project(point2, pp2))
+		return;
+	if (!camera->project(point3, pp3))
+		return;
+
+	//round to int
+	ui0 = floorf(pp1[0] + 0.5);
+	vi0 = floorf(pp1[1] + 0.5);
+	ui1 = floorf(pp2[0] + 0.5);
+	vi1 = floorf(pp2[1] + 0.5);
+	ui2 = floorf(pp3[0] + 0.5);
+	vi2 = floorf(pp3[1] + 0.5);
+
+	//clamping
+	umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
+	if (umin < 0) { umin = 0; }
+	if (vmin < 0) { vmin = 0; }
+	if (umax > w - 1) { umax = w - 1; }
+	if (vmax > h - 1) { vmax = h - 1; }
+
+	//initialize projection matrix
+	/*V3 a = camera->horizontal;
+	V3 b = camera->vertical;
+	V3 c = camera->topleft;*/
+	v1 = point1;
+	v2 = point2;
+	v3 = point3;
+	C = camera->pos;
+	//M33 abc(a, b, c);
+	//M33 abc(camera->horizontal, camera->vertical, camera->topleft);
+	//abc = abc.transpose();
+	M33 q = M33(v1 - C, v2 - C, v3 - C).transpose();
+	M33 qinv;
+	if (!q.inverse(&qinv))
+		return;
+	q = qinv * camera->getABC();//abc
+
+	bool opaque = !(mat->opacity);
+
+	//render using Model Space Coordinates
+	for (int u = umin; u < umax; ++u) {
+		for (int v = vmin; v < vmax; ++v) {
+			//check sidedness
+			int side1 = u * (vi1 - vi0) - v * (ui1 - ui0) - ui0 * vi1 + vi0 * ui1; //0 1
+			int side2 = u * (vi2 - vi1) - v * (ui2 - ui1) - ui1 * vi2 + vi1 * ui2; //1 2
+			int side3 = u * (vi0 - vi2) - v * (ui0 - ui2) - ui2 * vi0 + vi2 * ui0; //2 0 
+			if (side1 < 0 || side2 < 0 || side3 < 0)
+				if (side1 > 0 || side2 > 0 || side3 > 0)
+					continue;
+			V3 uv1 = V3(u, v, 1);
+			V3 quv1 = (q * uv1);
+			float w = (quv1[0] + quv1[1] + quv1[2]);
+			if (w*w < 0.00001) { continue; }
+			V3 kl = quv1 / w;
+			V3 localCoord = uvw1 * kl[0] + uvw2 * kl[1] + uvw3 * kl[2];
+			V3 localPos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
+			V3 localNormal = (normal1 * kl[0] + normal2 * kl[1] + normal3 * kl[2]).norm();
+			V3 col = lightEnvironment->getLightingAtVertexShadow(mat, localPos, localCoord, localNormal);
+			/*V3 coll(col);
+			V3 lightFactor = lights[0]->getIntensity(localPos, localNormal);
+			coll[0] = coll[0] * lightFactor[0];
+			coll[1] = coll[1] * lightFactor[1];
+			coll[2] = coll[2] * lightFactor[2];*/
+			if (opaque) {
+				setZ(u, v, 1 / w, col.getColor());
+			}
+			else {
+				float alpha = mat->getOpacity()->getColorNearestV3(localCoord[0], localCoord[1])[0];
+				setZBlend(u, v, 1 / w, col.getColor(), alpha);
+			}
+		}
+	}
+}
+
+void FrameBuffer::displayShadowMap(int x, int y, ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir) {
 	//tmp
 	for (int i = 0; i < sm->mapRes; ++i) {
 		for (int j = 0; j < sm->mapRes; ++j) {
-			Set(i,j,V3(sm->dirDepthMaps[shadowDir][i*sm->mapRes+j],0,0).getColor());
+			float val = 1 - (500*sm->dirDepthMaps[shadowDir][i*sm->mapRes + j]/MAXDEPTH);
+			if(val > 0.1)
+				Set(x+i,y+j,V3(val,val,val).getColor());
 		}
 	}
 }
