@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include "framebuffer.h"
 \
 extern "C"
 {
@@ -26,7 +27,7 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 static void encodeMk2(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 	FILE *outfile);
 
-int encodeFile();
+int encodeFile(FrameBuffer * fb);
 int drawFrame(unsigned int* data, int iter);
 int finishEncodingFile();
 

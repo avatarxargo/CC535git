@@ -296,7 +296,7 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 	}
 }
 
-int encodeFile()
+int encodeFile(FrameBuffer* fb)
 {
 	/* find the mpeg1video encoder */
 	codec = avcodec_find_encoder_by_name(codec_name);
@@ -319,8 +319,8 @@ int encodeFile()
 	/* put sample parameters */
 	c->bit_rate = 40000000;
 	/* resolution must be a multiple of two */
-	c->width = 1280;//352;
-	c->height = 720;// 288;
+	c->width = fb->w;//352;
+	c->height = fb->h;// 288;
 	/* frames per second */
 	AVRational avr_time_base = { 1, 30 };
 	AVRational avr_framerate = { 1, 30 };

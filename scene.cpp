@@ -19,8 +19,8 @@ Scene::Scene() {
 
 	int u0 = 20;
 	int v0 = 20;
-	int w = 1280;// 680;//1280;
-	int h = 720;// 420;//720;
+	int w = 680;// 680;//1280;
+	int h = 420;// 420;//720;
 
 	camera = new PPC(60, w, h);
 	camera->pos = camera->pos + V3(0, 50, 0);
@@ -292,7 +292,7 @@ void Scene::Save() {
 	cinematicCamera(true);
 	return;
 	cerr << "Encoding video:" << endl;
-	encodeFile(); //libx264rgb
+	encodeFile(fb); //libx264rgb
 	//videoCapture = Init(1280, 720, 30, 400000);
 	for (int i = 0; i < 360; ++i) {
 		Render();
@@ -359,7 +359,7 @@ void Scene::cinematicCamera(bool save) {
 	cam3->loadFromFile("mydbg/cam3.txt");
 	if (save) {
 		cerr << "Encoding video:" << endl;
-		encodeFile();
+		encodeFile(fb);
 	}
 	float seconds = 10;
 	float fps = 30;

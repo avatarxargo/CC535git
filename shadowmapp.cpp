@@ -176,7 +176,7 @@ namespace ShadowMapNS {
 		dirCameras[dir]->project(ptr, proj);
 		float dist = proj[2];
 		float storedist = dirDepthMaps[dir][coord];
-		return dist-0.03f < storedist;
+		return dist - 0.01f < storedist;
 	}
 
 	V3 dir, normdir;

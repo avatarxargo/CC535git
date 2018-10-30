@@ -728,6 +728,7 @@ void FrameBuffer::draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1
 	bool opaque = !(mat->opacity);
 
 	//render using Model Space Coordinates
+	float normalfactor = 1;
 	for (int u = umin; u < umax; ++u) {
 		for (int v = vmin; v < vmax; ++v) {
 			//check sidedness
@@ -735,8 +736,12 @@ void FrameBuffer::draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1
 			int side2 = u * (vi2 - vi1) - v * (ui2 - ui1) - ui1 * vi2 + vi1 * ui2; //1 2
 			int side3 = u * (vi0 - vi2) - v * (ui0 - ui2) - ui2 * vi0 + vi2 * ui0; //2 0 
 			if (side1 < 0 || side2 < 0 || side3 < 0)
-				if (side1 > 0 || side2 > 0 || side3 > 0)
+				if (side1 > 0 || side2 > 0 || side3 > 0) {
 					continue;
+				}
+				else {
+					normalfactor = -1;
+				}
 			V3 uv1 = V3(u, v, 1);
 			V3 quv1 = (q * uv1);
 			float w = (quv1[0] + quv1[1] + quv1[2]);
@@ -744,7 +749,7 @@ void FrameBuffer::draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1
 			V3 kl = quv1 / w;
 			V3 localCoord = uvw1 * kl[0] + uvw2 * kl[1] + uvw3 * kl[2];
 			V3 localPos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
-			V3 localNormal = (normal1 * kl[0] + normal2 * kl[1] + normal3 * kl[2]).norm();
+			V3 localNormal = (normal1 * kl[0] + normal2 * kl[1] + normal3 * kl[2]).norm()*normalfactor;
 			V3 col = lightEnvironment->getLightingAtVertexShadow(mat, localPos, localCoord, localNormal);
 			/*V3 coll(col);
 			V3 lightFactor = lights[0]->getIntensity(localPos, localNormal);
