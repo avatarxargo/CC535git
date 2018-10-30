@@ -93,12 +93,12 @@ void PPC::translateFlat(V3 trans) {
 }
 
 int PPC::project(V3 p, V3& pp) {
-	M33 m, minv;
+	/*M33 m, minv;
 	m = m.setColumn(0, horizontal);
 	m = m.setColumn(1, vertical);
 	m = m.setColumn(2, topleft);
-	m.inverse(&minv);
-	V3 q = minv*(p - pos);
+	m.inverse(&minv);*/
+	V3 q = abcinv * (p - pos);
 	if (q[2] < 0.0f)
 	{
 		//cerr << "not projected:" << q[2] << " [" << p << "]" << endl;
@@ -110,6 +110,29 @@ int PPC::project(V3 p, V3& pp) {
 	pp[1] = q[1] / q[2];
 	return 1;
 }
+
+int PPC::contained(V3 p) {
+	/*M33 m, minv;
+	m = m.setColumn(0, horizontal);
+	m = m.setColumn(1, vertical);
+	m = m.setColumn(2, topleft);
+	m.inverse(&minv);*/
+	V3 q = abcinv * (p - pos);
+	if (q[2] < 0.0f)
+	{
+		return 0;
+	}
+	float val = q[0] / q[2];
+	if (val < 0 || val > w) {
+		return 0;
+	}
+	val = q[1] / q[2];
+	if (val < 0 || val > h) {
+		return 0;
+	}
+	return 1;
+}
+
 
 float PPC::getFocalLength() {
 	//cross product between hor and vert gives us direction.

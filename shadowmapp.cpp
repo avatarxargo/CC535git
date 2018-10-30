@@ -191,15 +191,15 @@ namespace ShadowMapNS {
 		//cos > 0.52532198881 - ok
 		//test each major direction for dot product - cos of angle
 		ShadowDir sdir = WEST;
-		if (normdir*V3(1, 0, 0) > coslim) {
+		if (dirCameras[NORTH]->contained(point)) {
 			sdir = NORTH;
-		} else if (normdir*V3(-1, 0, 0) > coslim) {
+		} else if (dirCameras[SOUTH]->contained(point)) {
 			sdir = SOUTH;
-		} else if (normdir*V3(0, 1, 0) > coslim) {
+		} else if (dirCameras[TOP]->contained(point)) {
 			sdir = TOP;
-		} else if (normdir*V3(0, -1, 0) > coslim) {
+		} else if (dirCameras[BOT]->contained(point)) {
 			sdir = BOT;
-		} else if (normdir*V3(0, 0, 1) > coslim) {
+		} else if (dirCameras[EAST]->contained(point)) {
 			sdir = EAST;
 		} //else if (dir*V3(0, 0, -1) > coslim)
 		//cerr << "dir: " << sdir << endl;
@@ -219,19 +219,19 @@ namespace ShadowMapNS {
 		//cos(45) = 0.52532198881;
 		//cos > 0.52532198881 - ok
 		//test each major direction for dot product - cos of angle
-		if (normdir*V3(1, 0, 0) > coslim) {
+		if (dirCameras[NORTH]->contained(point)) {
 			return NORTH;
 		}
-		else if (normdir*V3(-1, 0, 0) > coslim) {
+		else if (dirCameras[SOUTH]->contained(point)) {
 			return SOUTH;
 		}
-		else if (normdir*V3(0, 1, 0) > coslim) {
+		else if (dirCameras[TOP]->contained(point)) {
 			return TOP;
 		}
-		else if (normdir*V3(0, -1, 0) > coslim) {
+		else if (dirCameras[BOT]->contained(point)) {
 			return BOT;
 		}
-		else if (normdir*V3(0, 0, 1) > coslim) {
+		else if (dirCameras[EAST]->contained(point)) {
 			return EAST;
 		}
 		return WEST;
@@ -265,7 +265,7 @@ namespace ShadowMapNS {
 	}
 
 	void ShadowMap::renderBBDir(ShadowDir dir, PPC* ppc, FrameBuffer* fb) {
-		dirCameras[dir]->visualize(ppc, fb, 0.5);
+		dirCameras[dir]->visualize(ppc, fb, 5);
 	}
 
 	void ShadowMap::renderBB(PPC* ppc, FrameBuffer* fb) {

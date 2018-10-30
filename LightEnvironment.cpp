@@ -73,7 +73,7 @@ V3 LightEnvironment::getLightingAtVertexShadow(Material* mat, V3 point, V3 uvw, 
 	lightDirection = lightDirection.norm();
 	specularPower = mat->getSpecularPower();
 	//shadow
-	float shadowPower = 1;// shadowMap->getMapValue(point);
+	float shadowPower = shadowMap->getMapValue(point);
 	//colDiff = mat->getDiffuse()->getColorV3(uvw);
 	//colDiff = V3(1, 0.5, 0.5);
 	colDiff = shadowMap->dirToColor(shadowMap->getMapColorCoding(point));

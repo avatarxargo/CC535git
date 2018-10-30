@@ -768,7 +768,7 @@ void FrameBuffer::displayShadowMap(int x, int y, ShadowMapNS::ShadowMap* sm, Sha
 		for (int j = 0; j < sm->mapRes; ++j) {
 			float val = 1 - (500*sm->dirDepthMaps[shadowDir][i*sm->mapRes + j]/MAXDEPTH);
 			if(val > 0.1)
-				Set(x+i,y+j,V3(val,val,val).getColor());
+				Set(x+i,y+j, (sm->dirToColor(shadowDir) * val).getColor());
 		}
 	}
 }
