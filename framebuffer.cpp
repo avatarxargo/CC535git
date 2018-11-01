@@ -5,6 +5,7 @@
 #include "v3.h"
 #include <iostream>
 #include "tiffio.h"
+#include "shadowMap.h"
 
 #define MAXDEPTH 10000.0f
 
@@ -769,11 +770,12 @@ void FrameBuffer::draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1
 
 void FrameBuffer::displayShadowMap(int x, int y, ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir) {
 	//tmp
+	float factor = 100.0f / sm->mapRes;
 	for (int i = 0; i < sm->mapRes; ++i) {
 		for (int j = 0; j < sm->mapRes; ++j) {
 			float val = 1 - (500*sm->dirDepthMaps[shadowDir][i*sm->mapRes + j]/MAXDEPTH);
 			if(val > 0.1)
-				Set(x+i,y+j, (sm->dirToColor(shadowDir) * val).getColor());
+				Set(x+ factor * i,y+ factor * j, (sm->dirToColor(shadowDir) * val).getColor());
 		}
 	}
 }

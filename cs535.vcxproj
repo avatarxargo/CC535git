@@ -85,6 +85,7 @@
       <AdditionalDependencies>swresample.lib;postproc.lib;avformat.lib;swscale.lib;avutil.lib;avfilter.lib;avdevice.lib;avcodec.lib;opengl32.lib;fltk.lib;fltkgl.lib;glut32.lib;cg.lib;cgGL.lib;libtiff.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -100,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aabb.h" />
+    <ClInclude Include="sceneList.h" />
     <ClInclude Include="framebuffer.h" />
     <ClInclude Include="glext.h" />
     <ClInclude Include="gui.h" />
@@ -132,6 +134,7 @@
     <ClCompile Include="ppc.cpp" />
     <ClCompile Include="quat.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="sceneList.cpp" />
     <ClCompile Include="shadowmapp.cpp" />
     <ClCompile Include="shadowmap.h" />
     <ClCompile Include="Texture.cpp" />

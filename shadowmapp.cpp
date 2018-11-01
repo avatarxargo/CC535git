@@ -3,6 +3,12 @@
 #include "framebuffer.h"
 #include "tm.h"
 #include "v3.h"
+/**
+ *	Title:	shadowmap.h
+ *	Author: David Hrusa
+ *	Date:	10/19/2018
+ *	Desc:	Looks in 6 directions and casts shadows
+ */
 
 #define MAXDEPTH 10000;
 
@@ -19,7 +25,7 @@ namespace ShadowMapNS {
 		dirCameras[EAST] = new PPC(V3(-1, 0, 0), V3(0, -1, 0), V3(1, 1, 1), pos);
 		dirCameras[SOUTH] = new PPC(V3(0, 0, -1), V3(0, -1, 0), V3(-1, 1, 1), pos);
 		dirCameras[WEST] = new PPC(V3(1, 0, 0), V3(0, -1, 0), V3(-1, 1, -1), pos);
-		float factor = 50;
+		float factor = resolution/2;
 		/*dirCameras[TOP]->changeFocalLength(factor);
 		dirCameras[BOT]->changeFocalLength(factor);
 		dirCameras[NORTH]->changeFocalLength(factor);
@@ -68,18 +74,28 @@ namespace ShadowMapNS {
 		clearDepth(WEST);
 	}
 
-	void ShadowMap::drawPlane(Plane* plane) {
+	void ShadowMap::genABC() {
 		dirCameras[TOP]->genABC();
 		dirCameras[BOT]->genABC();
 		dirCameras[NORTH]->genABC();
 		dirCameras[WEST]->genABC();
 		dirCameras[SOUTH]->genABC();
 		dirCameras[EAST]->genABC();
+	}
+
+	void ShadowMap::drawPlane(Plane* plane) {
 		draw3DTriangleDepth(plane->c, plane->b, plane->a);
 		draw3DTriangleDepth(plane->c, plane->d, plane->b);
 	}
 
-	//void ShadowMap::drawTM(TriangleMesh* tm) {}
+	void ShadowMap::drawTM(TriangleMesh* tm) {;
+		for (int tri = 0; tri < tm->trisN; tri++) {
+			int vi0 = tm->tris[3 * tri];
+			int vi1 = tm->tris[3 * tri + 1];
+			int vi2 = tm->tris[3 * tri + 2];
+			draw3DTriangleDepth(tm->verts[vi0], tm->verts[vi1], tm->verts[vi2]);
+		}
+	}
 
 	void ShadowMap::draw3DTriangleDepth(V3 point1, V3 point2, V3 point3) {
 		draw3DTriangleDepth(TOP, point1, point2, point3);
@@ -153,7 +169,6 @@ namespace ShadowMapNS {
 				V3 uv1 = V3(u, v, 1);
 				V3 quv1 = (q * uv1);
 				float w = (quv1[0] + quv1[1] + quv1[2]);
-				if (w*w < 0.00001) { continue; }
 				V3 kl = quv1 / w;
 				//V3 localPos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
 				V3 projPos = pp1 * kl[0] + pp2 * kl[1] + pp3 * kl[2];
@@ -172,8 +187,8 @@ namespace ShadowMapNS {
 	V3 proj;
 	float ShadowMap::getMapValueDir(ShadowDir dir, V3 ptr/*, PPC* cam1, V3 uvw1*/) {
 		//V3 uvw2 = dirCameras[dir]->getABCinv()*(dirCameras[dir]->pos - cam1->pos)+ dirCameras[dir]->getABCinv()*cam1->getABC()*uvw1;
-		int coord = (int)proj[1] + (int)proj[0] * mapRes;
 		dirCameras[dir]->project(ptr, proj);
+		int coord = (int)(proj[1]+0.5f) + (int)(proj[0]) * mapRes ;
 		float dist = proj[2];
 		float storedist = dirDepthMaps[dir][coord];
 		return dist - 0.01f < storedist;
@@ -275,5 +290,17 @@ namespace ShadowMapNS {
 		renderBBDir(WEST, ppc, fb);
 		renderBBDir(SOUTH, ppc, fb);
 		renderBBDir(EAST, ppc, fb);
+	}
+
+	void ShadowMap::loadEnvMap(const char * pathN, const char* pathE, const char* pathW, const char* pathS, const char* pathT, const char* pathB) {
+
+	}
+
+	void ShadowMap::drawEnvPlane(Plane* plane) {
+
+	}
+
+	void ShadowMap::drawEnvTM(TriangleMesh* tm) {
+
 	}
 }

@@ -75,6 +75,9 @@
     <ClInclude Include="interpol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sceneList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene.cpp">
@@ -129,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="shadowmapp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sceneList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

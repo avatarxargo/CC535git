@@ -11,8 +11,12 @@
 #include "Light.h"
 #include "LightEnvironment.h"
 #include "material.h"
-#include "shadowmap.h"
 #include <vector>
+
+namespace ShadowMapNS {
+	class ShadowMap;
+	enum ShadowDir;
+}
 
 class FrameBuffer : public Fl_Gl_Window {
 public:

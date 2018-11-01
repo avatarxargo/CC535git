@@ -1,4 +1,5 @@
 #include "LightEnvironment.h"
+#include "shadowMap.h"
 
 LightEnvironment::LightEnvironment(Light* ambient) {
 	ambientLight = ambient;
@@ -73,10 +74,9 @@ V3 LightEnvironment::getLightingAtVertexShadow(Material* mat, V3 point, V3 uvw, 
 	lightDirection = lightDirection.norm();
 	specularPower = mat->getSpecularPower();
 	//shadow
-	float shadowPower = shadowMap->getMapValue(point);
-	//colDiff = mat->getDiffuse()->getColorV3(uvw);
+	colDiff = mat->getDiffuse()->getColorV3(uvw);
 	//colDiff = V3(1, 0.5, 0.5);
-	colDiff = shadowMap->dirToColor(shadowMap->getMapColorCoding(point));
+	//colDiff = shadowMap->dirToColor(shadowMap->getMapColorCoding(point));
 	colSpec = V3(1, 1, 1);// true ? V3(0, 0, 0) : V3(mat->getSpecular()->getColor(uvw[0], uvw[1]));
 	ambientStrength = 0.1;
 	//
@@ -88,6 +88,7 @@ V3 LightEnvironment::getLightingAtVertexShadow(Material* mat, V3 point, V3 uvw, 
 	}
 	//full light strength:
 	else if (lightDistance < lights[0]->rangeStart) {
+		float shadowPower = shadowMap->getMapValue(point);
 		//colDiff = V3(1, 0.5, 0.5);
 		//halfway vec for specular:
 		halfway = (lightDirection + viewDirection).norm();
@@ -103,6 +104,7 @@ V3 LightEnvironment::getLightingAtVertexShadow(Material* mat, V3 point, V3 uvw, 
 	}
 	//in between:
 	else {
+		float shadowPower = shadowMap->getMapValue(point);
 		//colDiff = V3(1, 0.5, 0.5);
 		//strength of the overal light based on distance:
 		lightStrength = (1 - ((lightDistance - lights[0]->rangeStart) / (lights[0]->diff)))*shadowPower;

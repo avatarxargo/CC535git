@@ -112,7 +112,23 @@ void TriangleMesh::renderFillTexturedLit(PPC * ppc, FrameBuffer *fb, Material *m
 		V3 c2 = V3(tcs[vi2 * 2], tcs[vi2 * 2 + 1], 0);
 		fb->draw3DTriangleTexturedLit(verts[vi0], c0, normals[vi0], verts[vi1], c1, normals[vi1], verts[vi2], c2, normals[vi2], ppc, mat);
 	}
+}
 
+void TriangleMesh::renderFillTexturedLitShadow(PPC * ppc, FrameBuffer *fb, Material *mat) {
+	if (!tcs) {
+		renderFill(ppc, fb);
+		return;
+	}
+	fb->lightEnvironment->setCameraPos(ppc->pos);
+	for (int tri = 0; tri < trisN; tri++) {
+		int vi0 = tris[3 * tri];
+		int vi1 = tris[3 * tri + 1];
+		int vi2 = tris[3 * tri + 2];
+		V3 c0 = V3(tcs[vi0 * 2], tcs[vi0 * 2 + 1], 0);
+		V3 c1 = V3(tcs[vi1 * 2], tcs[vi1 * 2 + 1], 0);
+		V3 c2 = V3(tcs[vi2 * 2], tcs[vi2 * 2 + 1], 0);
+		fb->draw3DTriangleTexturedLitShadow(verts[vi0], c0, normals[vi0], verts[vi1], c1, normals[vi1], verts[vi2], c2, normals[vi2], ppc, mat);
+	}
 }
 
 /*void TriangleMesh::renderFillClip(PPC *ppc, FrameBuffer *fb) {
@@ -184,7 +200,9 @@ void TriangleMesh::position(V3 position, float _scale) {
 
 
 void TriangleMesh::drawUnlit(PPC* ppc, FrameBuffer* fb) {}
-void TriangleMesh::drawPerspective(PPC* ppc, FrameBuffer* fb) {}
+void TriangleMesh::drawPerspective(PPC* ppc, FrameBuffer* fb) {
+	renderFillTexturedLitShadow(ppc, fb, material);
+}
 void TriangleMesh::drawuv(PPC* ppc, FrameBuffer* fb) {}
 void TriangleMesh::drawScreenspace(PPC* ppc, FrameBuffer* fb) {}
 

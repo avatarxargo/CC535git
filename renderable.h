@@ -10,10 +10,13 @@
 
 enum RenderMode { UNLIT, UV, SCREENSPACE, PERSPECTIVE };
 
+enum RenderableType { REN_PLANE, REN_TM };
+
 class Renderable {
 public:
 	Material* material;
 	RenderMode renderMode = PERSPECTIVE;
+	RenderableType type = REN_PLANE;
 	//We let each object implement its own thing
 	virtual void drawUnlit(PPC* ppc, FrameBuffer* fb) = 0;
 	virtual void drawPerspective(PPC* ppc, FrameBuffer* fb) = 0;
@@ -45,5 +48,8 @@ public:
 	//
 	void setMode(RenderMode mode) {
 		renderMode = mode;
+	}
+	RenderableType getType() {
+		return type;
 	}
 };

@@ -26,7 +26,9 @@
 	float currentScale;
 	Quaternion currentOrientation;
 	//
-	TriangleMesh() : verts(0), vertsN(0), colors(0), tris(0), trisN(0), boundingBox(), currentScale(1){};
+	TriangleMesh() : verts(0), vertsN(0), colors(0), tris(0), trisN(0), boundingBox(), currentScale(1){
+		type = REN_TM;
+	};
 	void LoadBin(char *fname);
 	AABB getBoundingBox();
 	V3 GetCenter();
@@ -42,6 +44,7 @@
 	void renderFill(PPC *ppc, FrameBuffer *fb);
 	void renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture *tex);
 	void renderFillTexturedLit(PPC * ppc, FrameBuffer *fb, Material *mat);
+	void renderFillTexturedLitShadow(PPC * ppc, FrameBuffer *fb, Material *mat);
 	void renderFillClip(PPC *ppc, FrameBuffer *fb);
 	//from renderable
 	void drawUnlit(PPC* ppc, FrameBuffer* fb);

@@ -22,6 +22,8 @@ Scene::Scene() {
 	int w = 680;// 680;//1280;
 	int h = 420;// 420;//720;
 
+	sceneList = new SceneList();
+
 	camera = new PPC(60, w, h);
 	camera->pos = camera->pos + V3(0, 50, 0);
 	//camera->loadFromFile("mydbg/cameraInfo.txt");
@@ -75,6 +77,9 @@ Scene::Scene() {
 	wood1b->getDiffuse()->setFilter(BILINEAR);
 	wood2b->getDiffuse()->setFilter(BILINEAR);
 
+	tm1->setMaterial(hamster);
+	addRenderable(tm1);
+
 	tiles = new Material("tex/tiles.tif");
 	tiles->getDiffuse()->genMipMapV3(5,2000);
 	//p0 = 
@@ -87,10 +92,13 @@ Scene::Scene() {
 	addRenderable(new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh));
 	//p2 = 
 	addRenderable(new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2));
+	addRenderable(new Plane(V3(-250, 50, 400), V3(0, 100, 0), V3(-100, 0, 0), wood2));
+	addRenderable(new Plane(V3(400, 50, 0), V3(0, 100, 0), V3(0, 0, 100), wood2));
+	addRenderable(new Plane(V3(-400, 50, 0), V3(0, 100, 0), V3(0, 0, 100), wood2));
 	//p2b =
 	addRenderable(new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2b));
 	//floor = 
-	addRenderable(new Plane(V3(0, -50, 0), V3(150, 0, 0), V3(0, 0, -150), tstbil));
+	addRenderable(new Plane(V3(0, -40, 0), V3(150, 0, 0), V3(0, 0, -150), tstbil));
 	//phamster = 
 	addRenderable(new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster));
 	//phamsterb = 
@@ -113,7 +121,7 @@ Scene::Scene() {
 		float delta = 100;
 		for (int i = 0; i < 20; ++i) {
 			for (int j = 0; j < 20; ++j) {
-				addRenderable(new Plane(V3(startoff+delta*i, -51, startoff + delta * j), V3(-delta / 2, 0, 0), V3(0, 0, delta / 2), wood2b));
+				addRenderable(new Plane(V3(startoff+delta*i, -50, startoff + delta * j), V3(-delta / 2, 0, 0), V3(0, 0, delta / 2), wood2b));
 			}
 		}
 	}
@@ -132,7 +140,7 @@ Scene::Scene() {
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
-	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 100);
+	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 800);
 	fb->lightEnvironment->shadowMap = tstShadow;
 
 	fb->show();
@@ -154,23 +162,22 @@ Scene::Scene() {
 }
 
 Renderable* Scene::getLastRenderable() {
-	return objects[objects.size()-1];
+	return sceneList->renderables[sceneList->renderables.size()-1];
 }
 
 void Scene::addRenderable(Renderable* renderable) {
-	objects.insert(objects.end(), renderable);
+	sceneList->addItem(renderable);
 }
 
 void Scene::renderSceneObjects(PPC* ppc, FrameBuffer* fb) {
-	for (int i = 0; i < objects.size() - 1; ++i) {
+	sceneList->render(fb, ppc);
+	/*for (int i = 0; i < objects.size() - 1; ++i) {
 		objects[i]->draw(ppc, fb);
-	}
+	}*/
 }
 
 void Scene::renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb) {
-	for (int i = 0; i < objects.size() - 1; ++i) {
-		tstShadow->drawPlane((Plane*)objects[i]);
-	}
+	sceneList->renderCubeDepth(tstShadow);
 }
 
 V3 pos = V3(1, -1, -10);
@@ -195,8 +202,8 @@ void updateLoop(Scene& scn, FrameBuffer* fb)
 
 float timer = 0;
 void Scene::Render() {
-	fb->lightEnvironment->lights[0]->position = V3(sinf(timer/5.0f)*50, 100, cosf(timer++ / 5.0f) * 50);
-	((Plane*)objects[8])->translate(V3(0, 0, -1));
+	fb->lightEnvironment->lights[0]->position = V3(sinf(timer/5.0f)*50 - 100, 100, cosf(timer++ / 5.0f) * 50);
+	((Plane*)sceneList->renderables[8])->translate(V3(0, 0, -1));
 	camera->genABC();
 	cam1->genABC();
 	cam2->genABC();
@@ -233,7 +240,7 @@ void Scene::Render() {
 	/*tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
 	tm4->renderFillTextured(camera, fb, rikako->getDiffuse());
 */
-	tm1->renderFillTexturedLit(camera, fb, wood2);
+	//tm1->renderFillTexturedLit(camera, fb, wood2);
 	//tm4->renderFillTexturedLit(camera, fb, wood2);
 
 	tm1->getBoundingBox().render(camera, fb);

@@ -9,7 +9,11 @@
 #include "light.h"
 #include "material.h"
 #include <vector>
-#include "shadowMap.h"
+
+namespace ShadowMapNS {
+	class ShadowMap;
+	enum ShadowDir;
+}
 
 class LightEnvironment {
 public:
