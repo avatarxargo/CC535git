@@ -45,6 +45,7 @@
 	void renderFillTextured(PPC *ppc, FrameBuffer *fb, Texture *tex);
 	void renderFillTexturedLit(PPC * ppc, FrameBuffer *fb, Material *mat);
 	void renderFillTexturedLitShadow(PPC * ppc, FrameBuffer *fb, Material *mat);
+	void renderFillEnvMap(PPC * ppc, FrameBuffer *fb, ShadowMapNS::ShadowMap *map);
 	void renderFillClip(PPC *ppc, FrameBuffer *fb);
 	//from renderable
 	void drawUnlit(PPC* ppc, FrameBuffer* fb);

@@ -111,6 +111,14 @@ int PPC::project(V3 p, V3& pp) {
 	return 1;
 }
 
+void PPC::unproject(V3 pp, V3& p) {
+	V3 ret = pp;
+	//ret[0] = ret[0] * ret[2];
+	//ret[1] = ret[1] * ret[2];
+	p = (abc * pp) + pos;
+}
+
+
 int PPC::contained(V3 p) {
 	/*M33 m, minv;
 	m = m.setColumn(0, horizontal);

@@ -35,6 +35,8 @@ public:
 	void changeFocalLength(float units);
 	//Projects p to pp.
 	int project(V3 p, V3 &pp);
+	//Unrojects pp to p.
+	void unproject(V3 pp, V3 &p);
 	//1 if contained, 0 if not
 	int contained(V3 p);
 	//Interpolate towards the provided camera to the rate provided 0-1.

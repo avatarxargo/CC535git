@@ -38,4 +38,6 @@ public:
 	V3 vectorRotate(V3 axisDir, float angle);
 	friend ostream& operator<<(ostream& os, V3 v0);
 	friend istream& operator>>(istream& is, V3& v0);
+	//reflects a ray as though this was a normal of the reflection
+	V3 reflect(V3 v0);
 };

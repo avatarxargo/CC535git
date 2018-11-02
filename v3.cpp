@@ -140,3 +140,10 @@ V3 V3::pointRotate(V3 axisOrigin, V3 axisDir, float angle) {
 V3 V3::vectorRotate(V3 axisDir, float angle) {
 	return pointRotate(V3(0, 0, 0), axisDir, angle);
 }
+
+V3 V3::reflect(V3 v0) {
+	V3 &me = *this;
+	V3 along = me * (me * v0);
+	V3 delta = v0 - along;
+	return along - delta;
+}

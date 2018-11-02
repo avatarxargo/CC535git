@@ -19,13 +19,21 @@ namespace ShadowMapNS {
 		/* top is +y
 		 * north is +z
 		 * east is +x */
+		 //create the directional buffers:
+		dirBuffer[TOP] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[BOT] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[NORTH] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[SOUTH] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[WEST] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[EAST] = new FrameBuffer(0, 0, mapRes, mapRes);
+		//create the directional cameras:
 		dirCameras[TOP] = new PPC(V3(0, 0, 1), V3(1, 0, 0), V3(-1, 1, -1), pos);
 		dirCameras[BOT] = new PPC(V3(0, 0, 1), V3(-1, 0, 0), V3(1, -1, -1), pos);
 		dirCameras[NORTH] = new PPC(V3(0, 0, 1), V3(0, -1, 0), V3(1, 1, -1), pos);
 		dirCameras[EAST] = new PPC(V3(-1, 0, 0), V3(0, -1, 0), V3(1, 1, 1), pos);
 		dirCameras[SOUTH] = new PPC(V3(0, 0, -1), V3(0, -1, 0), V3(-1, 1, 1), pos);
 		dirCameras[WEST] = new PPC(V3(1, 0, 0), V3(0, -1, 0), V3(-1, 1, -1), pos);
-		float factor = resolution/2;
+		float factor = resolution / 2;
 		/*dirCameras[TOP]->changeFocalLength(factor);
 		dirCameras[BOT]->changeFocalLength(factor);
 		dirCameras[NORTH]->changeFocalLength(factor);
@@ -88,7 +96,8 @@ namespace ShadowMapNS {
 		draw3DTriangleDepth(plane->c, plane->d, plane->b);
 	}
 
-	void ShadowMap::drawTM(TriangleMesh* tm) {;
+	void ShadowMap::drawTM(TriangleMesh* tm) {
+		;
 		for (int tri = 0; tri < tm->trisN; tri++) {
 			int vi0 = tm->tris[3 * tri];
 			int vi1 = tm->tris[3 * tri + 1];
@@ -188,52 +197,37 @@ namespace ShadowMapNS {
 	float ShadowMap::getMapValueDir(ShadowDir dir, V3 ptr/*, PPC* cam1, V3 uvw1*/) {
 		//V3 uvw2 = dirCameras[dir]->getABCinv()*(dirCameras[dir]->pos - cam1->pos)+ dirCameras[dir]->getABCinv()*cam1->getABC()*uvw1;
 		dirCameras[dir]->project(ptr, proj);
-		int coord = (int)(proj[1]+0.5f) + (int)(proj[0]) * mapRes ;
+		int coord = (int)(proj[1] + 0.5f) + (int)(proj[0]) * mapRes;
 		float dist = proj[2];
 		float storedist = dirDepthMaps[dir][coord];
 		return dist - 0.01f < storedist;
 	}
 
-	V3 dir, normdir;
-	const float coslim = 0.52532198881;
-	const float tolerance = 0;
+	V3 dir;
 	float ShadowMap::getMapValue(V3 point) {
 		dir = point - pos;
-		normdir = dir.norm();
-		float dist = dir.len();
-		//45 deg in radians = 0.785398
-		//cos(45) = 0.52532198881;
-		//cos > 0.52532198881 - ok
-		//test each major direction for dot product - cos of angle
 		ShadowDir sdir = WEST;
 		if (dirCameras[NORTH]->contained(point)) {
 			sdir = NORTH;
-		} else if (dirCameras[SOUTH]->contained(point)) {
+		}
+		else if (dirCameras[SOUTH]->contained(point)) {
 			sdir = SOUTH;
-		} else if (dirCameras[TOP]->contained(point)) {
+		}
+		else if (dirCameras[TOP]->contained(point)) {
 			sdir = TOP;
-		} else if (dirCameras[BOT]->contained(point)) {
+		}
+		else if (dirCameras[BOT]->contained(point)) {
 			sdir = BOT;
-		} else if (dirCameras[EAST]->contained(point)) {
+		}
+		else if (dirCameras[EAST]->contained(point)) {
 			sdir = EAST;
-		} //else if (dir*V3(0, 0, -1) > coslim)
-		//cerr << "dir: " << sdir << endl;
-		float depthdist = getMapValueDir(sdir,point);
-		/*if (dist / 50.0f - 3 > depthdist) {
-			//cerr << dist << " vs " << depthdist << endl;
-			return 0;
-		}*/
+		}
+		float depthdist = getMapValueDir(sdir, point);
 		return depthdist;
 	}
 
 	ShadowDir ShadowMap::getMapColorCoding(V3 point) {
 		dir = point - pos;
-		normdir = dir.norm();
-		float dist = dir.len();
-		//45 deg in radians = 0.785398
-		//cos(45) = 0.52532198881;
-		//cos > 0.52532198881 - ok
-		//test each major direction for dot product - cos of angle
 		if (dirCameras[NORTH]->contained(point)) {
 			return NORTH;
 		}
@@ -250,6 +244,35 @@ namespace ShadowMapNS {
 			return EAST;
 		}
 		return WEST;
+	}
+
+	V3 ShadowMap::getEnvValueDir(ShadowDir dir, V3 normal) {
+		//return (normal - pos)*0.5f+V3(0.5f,0.5f,0.5f);
+		dirCameras[dir]->project(normal, proj);
+		int coord = (int)(proj[0] + 0.5f) + (int)(mapRes - 1 - proj[1]) * mapRes;
+		//return V3(coord / (float)(mapRes*mapRes), 0, coord/(float)(mapRes*mapRes));
+		return dirBuffer[dir]->getDataPtrV3()[coord];
+	}
+
+	V3 ShadowMap::getEnvValue(V3 normal) {
+		V3 posi = pos + normal;
+		ShadowDir sdir = WEST;
+		if (dirCameras[NORTH]->contained(posi)) {
+			sdir = NORTH;
+		}
+		else if (dirCameras[SOUTH]->contained(posi)) {
+			sdir = SOUTH;
+		}
+		else if (dirCameras[TOP]->contained(posi)) {
+			sdir = TOP;
+		}
+		else if (dirCameras[BOT]->contained(posi)) {
+			sdir = BOT;
+		}
+		else if (dirCameras[EAST]->contained(posi)) {
+			sdir = EAST;
+		}
+		return getEnvValueDir(sdir, posi);
 	}
 
 	V3 ShadowMap::dirToColor(ShadowDir dir) {
@@ -292,15 +315,30 @@ namespace ShadowMapNS {
 		renderBBDir(EAST, ppc, fb);
 	}
 
-	void ShadowMap::loadEnvMap(const char * pathN, const char* pathE, const char* pathW, const char* pathS, const char* pathT, const char* pathB) {
+	void ShadowMap::loadEnvMapDir(ShadowDir dir, const char* path) {
+		dirBuffer[dir]->LoadTiff((char*)path);
+		//convert the loaded data into quickly readable V3 form
+		dirBuffer[dir]->pix2v3();
+	}
 
+	void ShadowMap::loadEnvMap(const char * pathN, const char* pathE, const char* pathW, const char* pathS, const char* pathT, const char* pathB) {
+		loadEnvMapDir(TOP, pathT);
+		loadEnvMapDir(BOT, pathB);
+		loadEnvMapDir(NORTH, pathN);
+		loadEnvMapDir(WEST, pathW);
+		loadEnvMapDir(SOUTH, pathS);
+		loadEnvMapDir(EAST, pathE);
 	}
 
 	void ShadowMap::drawEnvPlane(Plane* plane) {
-
+		for (int dir = 0; dir < 6; dir++) {
+			plane->draw(dirCameras[dir], dirBuffer[dir]);
+		}
 	}
 
 	void ShadowMap::drawEnvTM(TriangleMesh* tm) {
-
+		for (int dir = 0; dir < 6; dir++) {
+			tm->draw(dirCameras[dir], dirBuffer[dir]);
+		}
 	}
 }

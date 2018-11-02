@@ -17,6 +17,7 @@ FrameBuffer::FrameBuffer(int u0, int v0, int _w, int _h)
 	w = _w;
 	h = _h;
 	pix = new unsigned int[w*h];
+	pixv = new V3[w*h];
 	zbuffer = new float[w*h];
 	stencil = new int[w*h];
 	Light * ambience = new Light(V3(0.2, 0.2, 0.2));
@@ -26,6 +27,16 @@ FrameBuffer::FrameBuffer(int u0, int v0, int _w, int _h)
 
 unsigned int* FrameBuffer::getDataPtr() {
 	return pix;
+}
+
+V3* FrameBuffer::getDataPtrV3() {
+	return pixv;
+}
+
+void FrameBuffer::pix2v3() {
+	for (int i = 0; i < w*h; i++) {
+		pixv[i] = V3(pix[i]);
+	}
 }
 
 
@@ -768,6 +779,81 @@ void FrameBuffer::draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1
 	}
 }
 
+void FrameBuffer::draw3DTriangleEnvMap(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, ShadowMapNS::ShadowMap* map) {
+	//check whether all vertexes are within projection plane
+	if (!camera->project(point1, pp1))
+		return;
+	if (!camera->project(point2, pp2))
+		return;
+	if (!camera->project(point3, pp3))
+		return;
+
+	//round to int
+	ui0 = floorf(pp1[0] + 0.5);
+	vi0 = floorf(pp1[1] + 0.5);
+	ui1 = floorf(pp2[0] + 0.5);
+	vi1 = floorf(pp2[1] + 0.5);
+	ui2 = floorf(pp3[0] + 0.5);
+	vi2 = floorf(pp3[1] + 0.5);
+
+	//clamping
+	umin = fminf(ui2, fminf(ui0, ui1)) - 1;
+	vmin = fminf(vi2, fminf(vi0, vi1)) - 1;
+	umax = fmaxf(ui2, fmaxf(ui0, ui1)) + 1;
+	vmax = fmaxf(vi2, fmaxf(vi0, vi1)) + 1;
+	if (umin < 0) { umin = 0; }
+	if (vmin < 0) { vmin = 0; }
+	if (umax > w - 1) { umax = w - 1; }
+	if (vmax > h - 1) { vmax = h - 1; }
+
+	//initialize projection matrix
+	v1 = point1;
+	v2 = point2;
+	v3 = point3;
+	C = camera->pos;
+	M33 q = M33(v1 - C, v2 - C, v3 - C).transpose();
+	M33 qinv;
+	if (!q.inverse(&qinv))
+		return;
+	q = qinv * camera->getABC();//abc
+
+	//render using Model Space Coordinates
+	float normalfactor = 1;
+	for (int u = umin; u < umax; ++u) {
+		for (int v = vmin; v < vmax; ++v) {
+			//check sidedness
+			int side1 = u * (vi1 - vi0) - v * (ui1 - ui0) - ui0 * vi1 + vi0 * ui1; //0 1
+			int side2 = u * (vi2 - vi1) - v * (ui2 - ui1) - ui1 * vi2 + vi1 * ui2; //1 2
+			int side3 = u * (vi0 - vi2) - v * (ui0 - ui2) - ui2 * vi0 + vi2 * ui0; //2 0 
+			if (side1 < 0 || side2 < 0 || side3 < 0)
+				if (side1 > 0 || side2 > 0 || side3 > 0) {
+					continue;
+				}
+				else {
+					normalfactor = -1;
+				}
+			V3 uv1 = V3(u, v, 1);
+			V3 quv1 = (q * uv1);
+			float w = (quv1[0] + quv1[1] + quv1[2]);
+			if (w*w < 0.00001) { continue; }
+			V3 kl = quv1 / w;
+			V3 localPos = point1 * kl[0] + point2 * kl[1] + point3 * kl[2];
+			V3 localCamVec = C - localPos;
+			V3 localNormal = (normal1 * kl[0] + normal2 * kl[1] + normal3 * kl[2]).norm()*normalfactor;
+			V3 localReflectedRay = localNormal.reflect(localCamVec);
+			V3 col = map->getEnvValue(localReflectedRay);
+			if (true) {
+				setZ(u, v, 1 / w, col.getColor());
+			}
+			else {
+				float alpha = 0.5;
+				setZBlend(u, v, 1 / w, col.getColor(), alpha);
+			}
+		}
+	}
+}
+
+
 void FrameBuffer::displayShadowMap(int x, int y, ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir) {
 	//tmp
 	float factor = 100.0f / sm->mapRes;
@@ -806,6 +892,23 @@ void FrameBuffer::fog(float start, float end, V3 color) {
 				V3 myc(pix[i*w + j]);
 				myc = myc * (1 - rate) + color * rate;
 				pix[i*w + j] = myc.getColor();
+			}
+		}
+	}
+}
+
+void FrameBuffer::drawEnvironmentBG(float start, PPC* ppc, ShadowMapNS::ShadowMap* map) {
+	for (int i = 0; i < h; ++i) {
+		for (int j = 0; j < w; ++j) {
+			float z = zbuffer[i*w + j];
+			if (z < start) {
+				continue;
+			}
+			else {
+				V3 un;
+				ppc->unproject(V3(j,h-i,1),un);
+				pix[i*w + j] = map->getEnvValue(un).getColor();
+				continue;
 			}
 		}
 	}

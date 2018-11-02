@@ -53,11 +53,14 @@ namespace ShadowMapNS {
 		void renderBBDir(ShadowDir dir, PPC* ppc, FrameBuffer* fb);
 		void renderBB(PPC* ppc, FrameBuffer* fb);
 		//for env map:
+		V3 getEnvValueDir(ShadowDir dir, V3 normal);
+		V3 getEnvValue(V3 normal);
 		void drawEnvPlane(Plane* plane);
 		void drawEnvTM(TriangleMesh* tm);
 		void drawEnv3DTriangle(V3 point1, V3 point2, V3 point3);
 		bool drawEnv3DTriangle(ShadowDir dir, V3 point1, V3 point2, V3 point3);
 		//loads textures from files into each framebuffer
+		void loadEnvMapDir(ShadowDir dir, const char* path);
 		void loadEnvMap(const char * pathN, const char* pathE, const char* pathW, const char* pathS, const char* pathT, const char* pathB);
 	};
 }

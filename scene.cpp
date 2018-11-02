@@ -78,7 +78,7 @@ Scene::Scene() {
 	wood2b->getDiffuse()->setFilter(BILINEAR);
 
 	tm1->setMaterial(hamster);
-	addRenderable(tm1);
+	//addRenderable(tm1);
 
 	tiles = new Material("tex/tiles.tif");
 	tiles->getDiffuse()->genMipMapV3(5,2000);
@@ -140,7 +140,8 @@ Scene::Scene() {
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
-	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 800);
+	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 250);
+	tstShadow->loadEnvMap("tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");
 	fb->lightEnvironment->shadowMap = tstShadow;
 
 	fb->show();
@@ -171,9 +172,7 @@ void Scene::addRenderable(Renderable* renderable) {
 
 void Scene::renderSceneObjects(PPC* ppc, FrameBuffer* fb) {
 	sceneList->render(fb, ppc);
-	/*for (int i = 0; i < objects.size() - 1; ++i) {
-		objects[i]->draw(ppc, fb);
-	}*/
+	tm1->renderFillEnvMap(ppc, fb, tstShadow);
 }
 
 void Scene::renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb) {
@@ -279,6 +278,7 @@ void Scene::Render() {
 	}
 	   	 	
 	fb->fog(0.5f, 2.5f, V3(0.8, 0.8, 1));
+	fb->drawEnvironmentBG(2.5f,camera,tstShadow);
 	tstShadow->setPos(fb->lightEnvironment->lights[0]->position);
 	V3 tstPointer = V3(0, 400, 0);
 	tstShadow->getMapValue(tstPointer);

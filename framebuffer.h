@@ -21,6 +21,7 @@ namespace ShadowMapNS {
 class FrameBuffer : public Fl_Gl_Window {
 public:
 	unsigned int *pix;
+	V3 *pixv;
 	float * zbuffer;
 	int * stencil;
 	int w, h;
@@ -51,6 +52,7 @@ public:
 	void SaveAsTiff(char* fname);
 	V3 clampVector(V3 v0);
 	unsigned int* FrameBuffer::getDataPtr();
+	V3* FrameBuffer::getDataPtrV3();
 	//
 	void DrawSegment(V3 p0, V3 c0, V3 p1, V3 c1);
 	int Visible(int u, int v, float currz);
@@ -62,12 +64,16 @@ public:
 	void draw3DTriangleTextured(V3 point1, V3 uvw1, V3 point2, V3 uvw2, V3 point3, V3 uvw3, PPC* camera, Material* mat);
 	void draw3DTriangleTexturedLit(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat);
 	void draw3DTriangleTexturedLitShadow(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, Material* mat);
+	void draw3DTriangleEnvMap(V3 point1, V3 uvw1, V3 normal1, V3 point2, V3 uvw2, V3 normal2, V3 point3, V3 uvw3, V3 normal3, PPC* camera, ShadowMapNS::ShadowMap* map);
 	//visualizes the contents of a shadowMap on a screen.
 	void displayShadowMap(int x, int y, ShadowMapNS::ShadowMap* sm, ShadowMapNS::ShadowDir shadowDir);
+	// pixels to V3;
+	void pix2v3();
 	//
 	void addLight(Light* l);
 	void removeLight(int idx);
 	void fog(float start, float end, V3 color);
+	void drawEnvironmentBG(float start, PPC* ppc, ShadowMapNS::ShadowMap* map);
 	void input(int x, int y, int z);
 	void input2(float i, float j, float u, float p);
 	float getXin();
