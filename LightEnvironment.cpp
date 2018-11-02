@@ -68,6 +68,8 @@ V3 LightEnvironment::getLightingAtVertex(Material* mat, V3 point, V3 uvw, V3 nor
 
 V3 LightEnvironment::getLightingAtVertexShadow(Material* mat, V3 point, V3 uvw, V3 normal) {
 	viewDirection = (cameraPos - point).norm();
+	if (lights.size() <= 0)
+		return V3(1,0,1);
 	lightDirection = lights[0]->position - point;
 	lightDistance = lightDirection.len();
 	//normalize more efficiently:

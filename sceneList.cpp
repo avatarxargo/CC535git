@@ -21,6 +21,7 @@ void SceneList::render(FrameBuffer* fb, PPC* ppc) {
 
 
 void SceneList::renderCubeEnv(ShadowMapNS::ShadowMap* sm) {
+	sm->clearEnv();
 	for (int i = 0; i < renderables.size() - 1; ++i) {
 		switch (renderables[i]->getType()) {
 		case REN_PLANE:

@@ -331,14 +331,42 @@ namespace ShadowMapNS {
 	}
 
 	void ShadowMap::drawEnvPlane(Plane* plane) {
-		for (int dir = 0; dir < 6; dir++) {
+		plane->draw(dirCameras[TOP], dirBuffer[TOP]);
+		plane->draw(dirCameras[BOT], dirBuffer[BOT]);
+		plane->draw(dirCameras[NORTH], dirBuffer[NORTH]);
+		plane->draw(dirCameras[EAST], dirBuffer[EAST]);
+		plane->draw(dirCameras[SOUTH], dirBuffer[SOUTH]);
+		plane->draw(dirCameras[WEST], dirBuffer[WEST]);
+		/*for (int dir = 0; dir < 6; dir++) {
 			plane->draw(dirCameras[dir], dirBuffer[dir]);
-		}
+		}*/
 	}
 
 	void ShadowMap::drawEnvTM(TriangleMesh* tm) {
-		for (int dir = 0; dir < 6; dir++) {
+		tm->draw(dirCameras[TOP], dirBuffer[TOP]);
+		tm->draw(dirCameras[BOT], dirBuffer[BOT]);
+		tm->draw(dirCameras[NORTH], dirBuffer[NORTH]);
+		tm->draw(dirCameras[EAST], dirBuffer[EAST]);
+		tm->draw(dirCameras[SOUTH], dirBuffer[SOUTH]);
+		tm->draw(dirCameras[WEST], dirBuffer[WEST]);
+		/*for (int dir = 0; dir < 6; dir++) {
 			tm->draw(dirCameras[dir], dirBuffer[dir]);
-		}
+		}*/
+	}
+
+	void ShadowMap::clearEnv() {
+		dirBuffer[TOP]->clear();
+		dirBuffer[BOT]->clear();
+		dirBuffer[NORTH]->clear();
+		dirBuffer[EAST]->clear();
+		dirBuffer[WEST]->clear();
+		dirBuffer[SOUTH]->clear();
+		//
+		dirBuffer[TOP]->refreshDepth(5000);
+		dirBuffer[BOT]->refreshDepth(5000);
+		dirBuffer[NORTH]->refreshDepth(5000);
+		dirBuffer[EAST]->refreshDepth(5000); 
+		dirBuffer[WEST]->refreshDepth(5000);
+		dirBuffer[SOUTH]->refreshDepth(5000);
 	}
 }

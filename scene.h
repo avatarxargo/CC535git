@@ -14,11 +14,13 @@
 #include <fstream>
 #include <thread>
 #include <string>
+#include <windows.h>
 #include "sceneList.h"
 
 class Scene {
 public:
 	bool fpsConrols = true;
+	bool mouseMode = true;
 	GUI *gui;
 	FrameBuffer *fb, *subfb;
 	SceneList *sceneList;
@@ -35,8 +37,10 @@ public:
 	void Save();
 	void Render();
 	void drawGrid();
-	void cameraControl(); 
+	void cameraControl();
 	void cameraControlFPS();
+	void cameraControlRevolve(V3 ctr);
+	void clampMouse();
 	void cinematicCamera(bool save);
 	void animateScene();
 	Renderable* getLastRenderable();

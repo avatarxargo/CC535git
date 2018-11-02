@@ -12,6 +12,10 @@ using namespace std;
 
 #include <iostream>
 
+void closeEvent() {
+	scene->fpsConrols = false;
+}
+
 Scene::Scene() {
 
 	gui = new GUI();
@@ -136,6 +140,7 @@ Scene::Scene() {
 
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
+	fb->default_callback(fb,closeEvent);
 	Light* ambientl = new Light(V3(0.1, 0.1, 0.2));
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
 	fb->addLight(l1);
@@ -158,8 +163,10 @@ Scene::Scene() {
 
 	fb->refreshColor(0xFF000000);
 	Render();
-
+	cerr << "run\n";
 	Run();
+	cerr << "terminal\n";
+	fb->hide();
 }
 
 Renderable* Scene::getLastRenderable() {
@@ -177,6 +184,7 @@ void Scene::renderSceneObjects(PPC* ppc, FrameBuffer* fb) {
 
 void Scene::renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb) {
 	sceneList->renderCubeDepth(tstShadow);
+	sceneList->renderCubeEnv(tstShadow);
 }
 
 V3 pos = V3(1, -1, -10);
@@ -476,11 +484,68 @@ void Scene::cameraControlFPS() {
 	fb->input(11, 0);
 }
 
+float dst = 250;
+void Scene::cameraControlRevolve(V3 ctr) {
+	float tspd = 1;
+	float zoomspd = 50;
+	float tmp = fb->getInput(11)*tspd;
+	tmp = 3; //BONUS
+	if (tmp != 0) {
+		camera->panFlat(tmp, V3(0, 1, 0));
+	}
+	tmp = fb->getInput(10)*tspd;
+	tmp = 0; //BONUS
+	if (tmp != 0) {
+		camera->tilt(-tmp);
+	}
+	tmp = fb->getUin()*tspd;
+	tmp = 0; //BONUS
+	if (tmp != 0) {
+		camera->roll(tmp);
+	}
+	tmp = fb->getPin()*zoomspd;
+	tmp = 0.01; //BONUS
+	if (tmp != 0) {
+		dst += tmp;
+		//camera->changeFocalLength(tmp);
+	}
+	//
+	camera->pos = ctr - (camera->forward() * dst);
+	//
+	if (fb->getPrintCam()) {
+		camera->saveToFile("mydbg/cameraInfo.txt");
+	}
+	if (fb->getLoadCam()) {
+		camera->loadFromFile("mydbg/cameraInfo.txt");
+	}
+	fb->input(10, 0);
+	fb->input(11, 0);
+	//clampMouse();
+}
+
+void Scene::clampMouse() {
+	if (mouseMode) {
+		int Rx = 200;
+		int Ry = 200;
+		SetCursorPos(Rx, Ry);
+	}
+}
+
 void Scene::Run() {
 	//RayTrace();
 	while (fpsConrols) {
+		cerr << "r\n";
+		if (fb->exit) {
+			cerr << "exitrun\n";
+			fpsConrols = false;
+			//exit(0);
+			return;
+		}
 		//move camera
-		cameraControlFPS();
+		//cameraControlFPS();
+		V3 poss = V3(0, 50, -200);// V3(tm1->GetCenter());// 
+		//cerr << poss << "\n";
+		cameraControlRevolve(poss);
 		//animate scene
 		animateScene();
 

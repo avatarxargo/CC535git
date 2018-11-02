@@ -176,6 +176,10 @@ void FrameBuffer::KeyUpHandle(bool down) {
 		case 'q':
 			input(2, -1);
 			return;
+		case 'g':
+			cerr << "Closing" << endl;
+			exit = true;
+			break;
 		default:
 			return;
 		}
@@ -261,10 +265,9 @@ void FrameBuffer::KeyboardHandle() {
 	case 't':
 		loadCam = true;
 		break;
-	case 27:
+	case 'g':
 		cerr << "Closing" << endl;
-		exit(0);
-		//TODO fix
+		exit = true;
 		break;
 	default:
 		cerr << "INFO: do not understand keypress" << endl;
@@ -907,7 +910,7 @@ void FrameBuffer::drawEnvironmentBG(float start, PPC* ppc, ShadowMapNS::ShadowMa
 			else {
 				V3 un;
 				ppc->unproject(V3(j,h-i,1),un);
-				pix[i*w + j] = map->getEnvValue(un).getColor();
+				pix[i*w + j] = map->getEnvValue(un-ppc->pos).getColor();
 				continue;
 			}
 		}

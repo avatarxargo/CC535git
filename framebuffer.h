@@ -27,6 +27,7 @@ public:
 	int w, h;
 	LightEnvironment* lightEnvironment;
 	//vector<Light*> lights;
+	volatile bool exit = false;
 	volatile float inx, iny, inz, ini, inj, inu, inp;
 	volatile float inputs[20];
 	volatile bool printCam = false, loadCam = false;

@@ -57,6 +57,7 @@ namespace ShadowMapNS {
 		V3 getEnvValue(V3 normal);
 		void drawEnvPlane(Plane* plane);
 		void drawEnvTM(TriangleMesh* tm);
+		void clearEnv();
 		void drawEnv3DTriangle(V3 point1, V3 point2, V3 point3);
 		bool drawEnv3DTriangle(ShadowDir dir, V3 point1, V3 point2, V3 point3);
 		//loads textures from files into each framebuffer
