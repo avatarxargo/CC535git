@@ -23,8 +23,8 @@ Scene::Scene() {
 
 	int u0 = 20;
 	int v0 = 20;
-	int w = 680;// 680;//1280;
-	int h = 420;// 420;//720;
+	int w = 1280; //680;// 680;//1280;
+	int h = 720;// 420;// 420;//720;
 
 	sceneList = new SceneList();
 
@@ -87,7 +87,7 @@ Scene::Scene() {
 	tiles = new Material("tex/tiles.tif");
 	tiles->getDiffuse()->genMipMapV3(5,2000);
 	//p0 = 
-	addRenderable(new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1));
+	/*addRenderable(new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1));
 	//p1 = 
 	addRenderable(new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh));
 	//p0b = 
@@ -145,8 +145,11 @@ Scene::Scene() {
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
-	tstShadow = new ShadowMapNS::ShadowMap(l1->position, 250);
-	tstShadow->loadEnvMap("tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");
+	tstShadow = //new ShadowMapNS::ShadowMap(l1->position, 250);
+		new ShadowMapNS::ShadowMap(250, "tex/myn.tif", "tex/mye.tif", "tex/myw.tif", "tex/mys.tif", "tex/myt.tif", "tex/myb.tif");
+	//tstShadow->loadEnvMap("tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");
+	tstEnv = new ShadowMapNS::ShadowMap(250, "tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");// , "tex/myn.tif", "tex/mye.tif", "tex/myw.tif", "tex/mys.tif", "tex/myt.tif", "tex/myb.tif");
+	//tstEnv->loadEnvMap("tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");
 	fb->lightEnvironment->shadowMap = tstShadow;
 
 	fb->show();
@@ -164,7 +167,8 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	Render();
 	cerr << "run\n";
-	Run();
+	//Run();
+	Save();
 	cerr << "terminal\n";
 	fb->hide();
 }
@@ -184,7 +188,7 @@ void Scene::renderSceneObjects(PPC* ppc, FrameBuffer* fb) {
 
 void Scene::renderSceneObjectsShadow(PPC* ppc, FrameBuffer* fb) {
 	sceneList->renderCubeDepth(tstShadow);
-	sceneList->renderCubeEnv(tstShadow);
+	//sceneList->renderCubeEnv(tstShadow);
 }
 
 V3 pos = V3(1, -1, -10);
@@ -250,7 +254,7 @@ void Scene::Render() {
 	//tm1->renderFillTexturedLit(camera, fb, wood2);
 	//tm4->renderFillTexturedLit(camera, fb, wood2);
 
-	tm1->getBoundingBox().render(camera, fb);
+	//tm1->getBoundingBox().render(camera, fb);
 	//tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);
 	//p0b->drawScreenspace(camera, fb);
@@ -289,27 +293,29 @@ void Scene::Render() {
 	fb->drawEnvironmentBG(2.5f,camera,tstShadow);
 	tstShadow->setPos(fb->lightEnvironment->lights[0]->position);
 	V3 tstPointer = V3(0, 400, 0);
-	tstShadow->getMapValue(tstPointer);
-	tstShadow->renderBB(camera,fb);
-	fb->draw3DSegment(camera->pos+camera->forward()*5, V3(0.4f, 0, 0.4f), fb->lightEnvironment->lights[0]->position, V3(0.4f, 0, 0.4f), camera);
+	//tstShadow->getMapValue(tstPointer);
+	//tstShadow->renderBB(camera,fb);
+	//fb->draw3DSegment(camera->pos+camera->forward()*5, V3(0.4f, 0, 0.4f), fb->lightEnvironment->lights[0]->position, V3(0.4f, 0, 0.4f), camera);
 	//show miniatures of the depth maps in the top left corner
-	fb->displayShadowMap(0, 0, tstShadow, ShadowMapNS::SOUTH);
+	/*fb->displayShadowMap(0, 0, tstShadow, ShadowMapNS::SOUTH);
 	fb->displayShadowMap(100, 0, tstShadow, ShadowMapNS::EAST);
 	fb->displayShadowMap(0, 100, tstShadow, ShadowMapNS::NORTH);
 	fb->displayShadowMap(100, 100, tstShadow, ShadowMapNS::WEST);
 	fb->displayShadowMap(0, 200, tstShadow, ShadowMapNS::TOP);
-	fb->displayShadowMap(100, 200, tstShadow, ShadowMapNS::BOT);
+	fb->displayShadowMap(100, 200, tstShadow, ShadowMapNS::BOT);*/
 	fb->redraw();
 	Fl::check();
 }
 
 void Scene::Save() {
-	cinematicCamera(true);
-	return;
+	//cinematicCamera(true);
+	//return;
 	cerr << "Encoding video:" << endl;
 	encodeFile(fb); //libx264rgb
 	//videoCapture = Init(1280, 720, 30, 400000);
-	for (int i = 0; i < 360; ++i) {
+	for (int i = 0; i < 30*20; ++i) {
+		V3 poss = V3(0, 50, -200);
+		cameraControlRevolve(poss);
 		Render();
 		//do the image
 		string filename = "mydbg/img" + std::to_string(i) + ".tif";
@@ -484,7 +490,7 @@ void Scene::cameraControlFPS() {
 	fb->input(11, 0);
 }
 
-float dst = 250;
+float dst = 150;
 void Scene::cameraControlRevolve(V3 ctr) {
 	float tspd = 1;
 	float zoomspd = 50;
@@ -494,17 +500,17 @@ void Scene::cameraControlRevolve(V3 ctr) {
 		camera->panFlat(tmp, V3(0, 1, 0));
 	}
 	tmp = fb->getInput(10)*tspd;
-	tmp = 0; //BONUS
+	tmp = 0.1; //BONUS
 	if (tmp != 0) {
 		camera->tilt(-tmp);
 	}
 	tmp = fb->getUin()*tspd;
-	tmp = 0; //BONUS
+	tmp = -0.1; //BONUS
 	if (tmp != 0) {
 		camera->roll(tmp);
 	}
 	tmp = fb->getPin()*zoomspd;
-	tmp = 0.01; //BONUS
+	tmp = 0.1; //BONUS
 	if (tmp != 0) {
 		dst += tmp;
 		//camera->changeFocalLength(tmp);

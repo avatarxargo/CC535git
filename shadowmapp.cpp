@@ -34,12 +34,6 @@ namespace ShadowMapNS {
 		dirCameras[SOUTH] = new PPC(V3(0, 0, -1), V3(0, -1, 0), V3(-1, 1, 1), pos);
 		dirCameras[WEST] = new PPC(V3(1, 0, 0), V3(0, -1, 0), V3(-1, 1, -1), pos);
 		float factor = resolution / 2;
-		/*dirCameras[TOP]->changeFocalLength(factor);
-		dirCameras[BOT]->changeFocalLength(factor);
-		dirCameras[NORTH]->changeFocalLength(factor);
-		dirCameras[EAST]->changeFocalLength(factor);
-		dirCameras[SOUTH]->changeFocalLength(factor);
-		dirCameras[WEST]->changeFocalLength(factor);*/
 		dirCameras[TOP]->topleft = dirCameras[TOP]->topleft * factor;
 		dirCameras[BOT]->topleft = dirCameras[BOT]->topleft * factor;
 		dirCameras[NORTH]->topleft = dirCameras[NORTH]->topleft * factor;
@@ -65,6 +59,56 @@ namespace ShadowMapNS {
 		dirDepthMaps[EAST] = new float[mapRes * mapRes];
 		dirDepthMaps[SOUTH] = new float[mapRes * mapRes];
 		dirDepthMaps[WEST] = new float[mapRes * mapRes];
+	}
+
+	ShadowMap::ShadowMap(int resolution, const char * pathN, const char* pathE, const char* pathW, const char* pathS, const char* pathT, const char* pathB) {
+		mapRes = resolution;
+		pos = V3(0,0,0);
+		/* top is +y
+		 * north is +z
+		 * east is +x */
+		 //create the directional buffers:
+		dirBuffer[TOP] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[BOT] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[NORTH] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[SOUTH] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[WEST] = new FrameBuffer(0, 0, mapRes, mapRes);
+		dirBuffer[EAST] = new FrameBuffer(0, 0, mapRes, mapRes);
+		//create the directional cameras:
+		dirCameras[TOP] = new PPC(V3(0, 0, 1), V3(1, 0, 0), V3(-1, 1, -1), pos);
+		dirCameras[BOT] = new PPC(V3(0, 0, 1), V3(-1, 0, 0), V3(1, -1, -1), pos);
+		dirCameras[NORTH] = new PPC(V3(0, 0, 1), V3(0, -1, 0), V3(1, 1, -1), pos);
+		dirCameras[EAST] = new PPC(V3(-1, 0, 0), V3(0, -1, 0), V3(1, 1, 1), pos);
+		dirCameras[SOUTH] = new PPC(V3(0, 0, -1), V3(0, -1, 0), V3(-1, 1, 1), pos);
+		dirCameras[WEST] = new PPC(V3(1, 0, 0), V3(0, -1, 0), V3(-1, 1, -1), pos);
+		float factor = resolution / 2;
+		dirCameras[TOP]->topleft = dirCameras[TOP]->topleft * factor;
+		dirCameras[BOT]->topleft = dirCameras[BOT]->topleft * factor;
+		dirCameras[NORTH]->topleft = dirCameras[NORTH]->topleft * factor;
+		dirCameras[EAST]->topleft = dirCameras[EAST]->topleft * factor;
+		dirCameras[SOUTH]->topleft = dirCameras[SOUTH]->topleft * factor;
+		dirCameras[WEST]->topleft = dirCameras[WEST]->topleft * factor;
+		dirCameras[TOP]->w = mapRes;
+		dirCameras[TOP]->h = mapRes;
+		dirCameras[BOT]->w = mapRes;
+		dirCameras[BOT]->h = mapRes;
+		dirCameras[NORTH]->w = mapRes;
+		dirCameras[NORTH]->h = mapRes;
+		dirCameras[EAST]->w = mapRes;
+		dirCameras[EAST]->h = mapRes;
+		dirCameras[SOUTH]->w = mapRes;
+		dirCameras[SOUTH]->h = mapRes;
+		dirCameras[WEST]->w = mapRes;
+		dirCameras[WEST]->h = mapRes;
+		//
+		dirDepthMaps[TOP] = new float[mapRes * mapRes];
+		dirDepthMaps[BOT] = new float[mapRes * mapRes];
+		dirDepthMaps[NORTH] = new float[mapRes * mapRes];
+		dirDepthMaps[EAST] = new float[mapRes * mapRes];
+		dirDepthMaps[SOUTH] = new float[mapRes * mapRes];
+		dirDepthMaps[WEST] = new float[mapRes * mapRes];
+		//gen buffers
+		this->loadEnvMap(pathN,pathE,pathW,pathS,pathT,pathB);
 	}
 
 	void ShadowMap::clearDepth(ShadowDir dir) {
@@ -248,10 +292,61 @@ namespace ShadowMapNS {
 
 	V3 ShadowMap::getEnvValueDir(ShadowDir dir, V3 normal) {
 		//return (normal - pos)*0.5f+V3(0.5f,0.5f,0.5f);
+		/*dirCameras[dir]->project(normal, proj);
+		float x = proj[0];
+		float y = proj[1];
+		int x1 = (int)floorf(x + 0.5f) % mapRes;
+		int x2 = ((int)floorf(x + 0.5f)+1) % mapRes;
+		int y1 = (int)floorf(y + 0.5f) % mapRes;
+		int y2 = ((int)floorf(y + 0.5f)+1) % mapRes;
+		float xfactor = x2 - x;
+		float yfactor = y2 - y;
+		if (xfactor < 0) xfactor *= -1;
+		if (yfactor < 0) yfactor *= -1;
+		if (xfactor > 1) xfactor = 1;
+		if (yfactor > 1) yfactor = 1;
+		int coord1 = (int)(x2) + (int)(mapRes - 1 - y2) * mapRes;
+		int coord2 = (int)(x1) + (int)(mapRes - 1 - y2) * mapRes;
+		int coord3 = (int)(x2) + (int)(mapRes - 1 - y1) * mapRes;
+		int coord4 = (int)(x1) + (int)(mapRes - 1 - y1) * mapRes;
+		V3 col1 = dirBuffer[dir]->getDataPtrV3()[coord1] * xfactor + dirBuffer[dir]->getDataPtrV3()[coord2] * (1 - xfactor);
+		V3 col2 = dirBuffer[dir]->getDataPtrV3()[coord3] * xfactor + dirBuffer[dir]->getDataPtrV3()[coord4] * (1 - xfactor);
+		return (col1*yfactor+col2*(1-yfactor)).clamp();*/
+
+		//
 		dirCameras[dir]->project(normal, proj);
-		int coord = (int)(proj[0] + 0.5f) + (int)(mapRes - 1 - proj[1]) * mapRes;
-		//return V3(coord / (float)(mapRes*mapRes), 0, coord/(float)(mapRes*mapRes));
-		return dirBuffer[dir]->getDataPtrV3()[coord];
+		float _u = proj[0];
+		float _v = proj[1];
+		//project into texture dimensions
+		float u = (_u) - 0.5f;
+		float v = ((1 - _v)) - 0.5f;
+		u -= floor(u / mapRes)*mapRes;
+		v -= floor(v / mapRes)*mapRes;
+		//round down
+		int l = floor(u);
+		int b = floor(v);
+		int r = l + 1;
+		int t = b + 1;
+		//compute differences
+		float dl = 1 - (u - l);
+		float dr = 1 - (r - u);
+		float db = 1 - (v - b);
+		float dt = 1 - (t - v);
+		//check exceeding
+		l -= floor(l / mapRes)*mapRes;
+		r -= floor(r / mapRes)*mapRes;
+		b -= floor(b / mapRes)*mapRes;
+		t -= floor(t / mapRes)*mapRes;
+		//get colors
+		V3 lt = dirBuffer[dir]->getDataPtrV3()[t*mapRes + l];
+		V3 rt = dirBuffer[dir]->getDataPtrV3()[t*mapRes + r];
+		V3 lb = dirBuffer[dir]->getDataPtrV3()[b*mapRes + l];
+		V3 rb = dirBuffer[dir]->getDataPtrV3()[b*mapRes + r];
+		//interpolate
+		V3 top = (lt*dl) + (rt*dr);
+		V3 bot = (lb*dl) + (rb*dr);
+		V3 col = (top*dt) + (bot*db);
+		return col;
 	}
 
 	V3 ShadowMap::getEnvValue(V3 normal) {

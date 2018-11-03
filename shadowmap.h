@@ -33,6 +33,8 @@ namespace ShadowMapNS {
 		//the directional depth maps
 		float * dirDepthMaps[6];// map_top, *map_bot, *map_north, *map_east, *map_south, *map_west;
 		ShadowMap(V3 _pos, int resolution);
+		//initialize as an environment map:
+		ShadowMap(int resolution, const char * pathN, const char* pathE, const char* pathW, const char* pathS, const char* pathT, const char* pathB);
 		//
 		//updates the shadowmap values
 		void clearDepth();
