@@ -18,9 +18,14 @@ namespace ShadowMapNS {
 	enum ShadowDir;
 }
 
+enum FrameBufferMode {
+	SW, GPU
+};
+
 class FrameBuffer : public Fl_Gl_Window {
 public:
 	unsigned int *pix;
+	FrameBufferMode bufferMode = SW;
 	V3 *pixv;
 	float * zbuffer;
 	int * stencil;

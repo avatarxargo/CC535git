@@ -14,7 +14,7 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Source Files\CG">
-      <UniqueIdentifier>{b0f72420-9eaa-463f-a69e-4c887276cd28}</UniqueIdentifier>
+      <UniqueIdentifier>{e7df22f1-aa6c-479e-a45c-d55c01defafd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +78,9 @@
     <ClInclude Include="sceneList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CGInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene.cpp">
@@ -137,6 +140,9 @@
     <ClCompile Include="sceneList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CGInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="gui.fl">
@@ -146,6 +152,9 @@
   <ItemGroup>
     <None Include="CG\shaderOne.cg">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaderOne.cg">
+      <Filter>Source Files\CG</Filter>
     </None>
   </ItemGroup>
 </Project>

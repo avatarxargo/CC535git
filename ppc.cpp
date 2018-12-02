@@ -234,6 +234,30 @@ void PPC::visualize(PPC* viewer, FrameBuffer* canvas, FrameBuffer* view) {
 	}
 }
 
+void PPC::setGPUPparams() {
+	//intrinsics
+	glViewport(0, 0, w, h);
+
+	float zNear = 1.0f;
+	float zFar = 1000.0f;
+	float scf = zNear / getFocalLength();
+	float left = -horizontal.len()*(float)w / 2.0f*scf;
+	float right = horizontal.len()*(float)w / 2.0f*scf;
+	float top = vertical.len()*(float)h / 2.0f*scf;
+	float bottom = -vertical.len()*(float)h / 2.0f*scf;
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(left, right, bottom, top, zNear, zFar);
+
+	glMatrixMode(GL_MODELVIEW);
+
+	//extrinsics
+	V3 L = pos + forward()*100.0f;
+	glLoadIdentity();
+	gluLookAt(pos[0], pos[1], pos[2], L[0], L[1], L[2], -vertical[0], -vertical[1], -vertical[2]);
+}
+
 void PPC::saveToFile(char* path) {
 	ofstream myfile;
 	myfile.open(path);

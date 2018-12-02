@@ -16,14 +16,17 @@
 #include <string>
 #include <windows.h>
 #include "sceneList.h"
+#include "CGInterface.h"
 
 class Scene {
 public:
 	bool fpsConrols = true;
 	bool mouseMode = true;
 	GUI *gui;
-	FrameBuffer *fb, *subfb;
+	FrameBuffer *fb, *subfb, *gpufb;
 	SceneList *sceneList;
+	CGInterface *cgi;
+	ShaderOneInterface *soi;
 	PPC *camera, *cam1, *cam2, *cam3, *vizcam;
 	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5;
 	Plane *p0, *p1, *p0b, *p1b, *p2, *p2b, *floor, *groundMesh, *phamster, *phamsterb, *tstplane, *tstplanebil;
@@ -36,6 +39,7 @@ public:
 	void Run();
 	void Save();
 	void Render();
+	void RenderGPU();
 	void drawGrid();
 	void cameraControl();
 	void cameraControlFPS();

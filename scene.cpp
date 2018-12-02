@@ -86,40 +86,6 @@ Scene::Scene() {
 
 	tiles = new Material("tex/tiles.tif");
 	tiles->getDiffuse()->genMipMapV3(5,2000);
-	//p0 = 
-	/*addRenderable(new Plane(V3(0, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1));
-	//p1 = 
-	addRenderable(new Plane(V3(250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh));
-	//p0b = 
-	addRenderable(new Plane(V3(0, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood1b));
-	//p1b = 
-	addRenderable(new Plane(V3(250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), mesh));
-	//p2 = 
-	addRenderable(new Plane(V3(-250, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2));
-	addRenderable(new Plane(V3(-250, 50, 400), V3(0, 100, 0), V3(-100, 0, 0), wood2));
-	addRenderable(new Plane(V3(400, 50, 0), V3(0, 100, 0), V3(0, 0, 100), wood2));
-	addRenderable(new Plane(V3(-400, 50, 0), V3(0, 100, 0), V3(0, 0, 100), wood2));
-	//p2b =
-	addRenderable(new Plane(V3(-250, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), wood2b));
-	//floor = 
-	addRenderable(new Plane(V3(0, -40, 0), V3(150, 0, 0), V3(0, 0, -150), tstbil));
-	//phamster = 
-	addRenderable(new Plane(V3(-500, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), hamster));
-	//phamsterb = 
-	addRenderable(new Plane(V3(-500, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), hamsterBil));
-	((Plane*)getLastRenderable())->setUV(3, 3);
-	//tstplane = 
-	addRenderable(new Plane(V3(-750, 250, -400), V3(0, 100, 0), V3(-100, 0, 0), tst));
-	((Plane*)getLastRenderable())->setUV(2, 2);
-	//tstplanebil = 
-	addRenderable(new Plane(V3(-750, 50, -400), V3(0, 100, 0), V3(-100, 0, 0), tstbil));
-	((Plane*)getLastRenderable())->setUV(2, 2);
-	/*phamsterb->setUV(3, 3);
-	tstplane->setUV(2, 2);
-	tstplanebil->setUV(2, 2);*/
-	//groundMesh = 
-	//addRenderable(new Plane(V3(0, -55, -1000), V3(500, 0, 0), V3(0, 0, -1000), tiles));
-	//((Plane*)getLastRenderable())->setUV(20, 10);
 	{
 		float startoff = -1000;
 		float delta = 100;
@@ -137,9 +103,15 @@ Scene::Scene() {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
 	}*/
+	gpufb = new FrameBuffer(w+u0+30, v0, w, h);
+	gpufb->label("GPU Framebuffer");
+	gpufb->bufferMode = GPU;
+	gpufb->default_callback(gpufb, closeEvent);
+	gpufb->show();
 
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
+	fb->bufferMode = SW;
 	fb->default_callback(fb,closeEvent);
 	Light* ambientl = new Light(V3(0.1, 0.1, 0.2));
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
@@ -167,8 +139,8 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	Render();
 	cerr << "run\n";
-	//Run();
-	Save();
+	Run();
+	//Save();
 	cerr << "terminal\n";
 	fb->hide();
 }
@@ -329,6 +301,46 @@ void Scene::Save() {
 	}
 	//videoCapture->xFinish();
 	finishEncodingFile();
+}
+
+//Renders the same stuff on GPU
+void Scene::RenderGPU() {
+
+	// if the first time, call per session initialization
+	if (cgi == NULL) {
+		cgi = new CGInterface();
+		cgi->PerSessionInit();
+		soi = new ShaderOneInterface();
+		soi->PerSessionInit(cgi);
+	}
+
+	// clear the framebuffer
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0, 0.0f, 0.5f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// set intrinsics
+	//camera->SetIntrinsicsHW();
+	// set extrinsics
+	//camera->SetExtrinsicsHW();
+	camera->setGPUPparams();
+
+	// per frame initialization
+	cgi->EnableProfiles();
+	soi->PerFrameInit();
+	soi->BindPrograms();
+
+	// render geometry
+	//for (int tmi = 0; tmi < tmsN; tmi++) {
+	//	tms[tmi].RenderHW();
+	//}
+	//TODO my own
+	for (int i = 0; i < sceneList->renderables.size(); ++i) {
+
+	}
+
+	soi->PerFrameDisable();
+	cgi->DisableProfiles();
 }
 
 void Scene::drawGrid() {
@@ -548,10 +560,10 @@ void Scene::Run() {
 			return;
 		}
 		//move camera
-		//cameraControlFPS();
+		cameraControlFPS();
 		V3 poss = V3(0, 50, -200);// V3(tm1->GetCenter());// 
 		//cerr << poss << "\n";
-		cameraControlRevolve(poss);
+		//cameraControlRevolve(poss);
 		//animate scene
 		animateScene();
 
