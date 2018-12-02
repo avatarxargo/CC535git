@@ -49,7 +49,7 @@ bool ShaderOneInterface::PerSessionInit(CGInterface *cgi) {
 
 #ifdef GEOM_SHADER
   geometryProgram = cgCreateProgramFromFile(cgi->cgContext, CG_SOURCE, 
-    "CG/shaderOne.cg", cgi->geometryCGprofile, "GeometryMain", NULL);
+    "shaderOne.cg", cgi->geometryCGprofile, "GeometryMain", NULL);
   if (geometryProgram == NULL)  {
     CGerror Error = cgGetError();
     cerr << "Shader One Geometry Program COMPILE ERROR: " << cgGetErrorString(Error) << endl;
@@ -59,7 +59,7 @@ bool ShaderOneInterface::PerSessionInit(CGInterface *cgi) {
 #endif
 
   vertexProgram = cgCreateProgramFromFile(cgi->cgContext, CG_SOURCE, 
-    "CG/shaderOne.cg", cgi->vertexCGprofile, "VertexMain", NULL);
+    "shaderOne.cg", cgi->vertexCGprofile, "VertexMain", NULL);
   if (vertexProgram == NULL) {
     CGerror Error = cgGetError();
     cerr << "Shader One Vertex Program COMPILE ERROR: " << cgGetErrorString(Error) << endl;
@@ -68,7 +68,7 @@ bool ShaderOneInterface::PerSessionInit(CGInterface *cgi) {
   }
 
   fragmentProgram = cgCreateProgramFromFile(cgi->cgContext, CG_SOURCE, 
-    "CG/shaderOne.cg", cgi->pixelCGprofile, "FragmentMain", NULL);
+    "shaderOne.cg", cgi->pixelCGprofile, "FragmentMain", NULL);
   if (fragmentProgram == NULL)  {
     CGerror Error = cgGetError();
     cerr << "Shader One Fragment Program COMPILE ERROR: " << cgGetErrorString(Error) << endl;

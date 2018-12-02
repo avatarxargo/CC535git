@@ -107,7 +107,6 @@ Scene::Scene() {
 	gpufb->label("GPU Framebuffer");
 	gpufb->bufferMode = GPU;
 	gpufb->default_callback(gpufb, closeEvent);
-	gpufb->show();
 
 	fb = new FrameBuffer(u0, v0, w, h);
 	fb->label("SW Framebuffer");
@@ -117,14 +116,15 @@ Scene::Scene() {
 	Light* l1 = new Light(V3(0, 100, 0), V3(1, 1, 1), 200, 700);
 	fb->addLight(l1);
 	fb->lightEnvironment->setAmbient(ambientl);
-	tstShadow = //new ShadowMapNS::ShadowMap(l1->position, 250);
-		new ShadowMapNS::ShadowMap(250, "tex/myn.tif", "tex/mye.tif", "tex/myw.tif", "tex/mys.tif", "tex/myt.tif", "tex/myb.tif");
+	//tstShadow = //new ShadowMapNS::ShadowMap(l1->position, 250);
+	//	new ShadowMapNS::ShadowMap(250, "tex/myn.tif", "tex/mye.tif", "tex/myw.tif", "tex/mys.tif", "tex/myt.tif", "tex/myb.tif");
 	//tstShadow->loadEnvMap("tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");
-	tstEnv = new ShadowMapNS::ShadowMap(250, "tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");// , "tex/myn.tif", "tex/mye.tif", "tex/myw.tif", "tex/mys.tif", "tex/myt.tif", "tex/myb.tif");
+	//tstEnv = new ShadowMapNS::ShadowMap(250, "tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");// , "tex/myn.tif", "tex/mye.tif", "tex/myw.tif", "tex/mys.tif", "tex/myt.tif", "tex/myb.tif");
 	//tstEnv->loadEnvMap("tex/sbn.tif", "tex/sbe.tif", "tex/sbw.tif", "tex/sbs.tif", "tex/sbt.tif", "tex/sbb.tif");
-	fb->lightEnvironment->shadowMap = tstShadow;
+	//fb->lightEnvironment->shadowMap = tstShadow;
 
 	fb->show();
+	gpufb->show();
 
 	if (vizcamena) {
 		subfb = new FrameBuffer(u0, v0, w, h);
@@ -196,7 +196,8 @@ void Scene::Render() {
 	//
 	fb->refreshColor(0xFF000000);
 	fb->refreshDepth(5000);
-	tstShadow->clearDepth();
+	//tstShadow->clearDepth();
+	
 	//fb->fog(0.5f, 1.5f, V3(0.8, 0.8, 1));
 	//fb->lightEnvironment->lights[0]->position = camera->pos;
 
@@ -223,17 +224,15 @@ void Scene::Render() {
 	/*tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
 	tm4->renderFillTextured(camera, fb, rikako->getDiffuse());
 */
-	//tm1->renderFillTexturedLit(camera, fb, wood2);
+	tm1->renderFillTexturedLit(camera, fb, wood2);
 	//tm4->renderFillTexturedLit(camera, fb, wood2);
 
-	//tm1->getBoundingBox().render(camera, fb);
+	tm1->getBoundingBox().render(camera, fb);
 	//tm4->getBoundingBox().render(camera, fb);
 	//tm5->renderFillTextured(camera, fb, rikako);
 	//p0b->drawScreenspace(camera, fb);
 	//p1b->drawScreenspace(camera, fb);
 	//cerr << "here\n";
-	renderSceneObjectsShadow(camera, fb);
-	renderSceneObjects(camera, fb);
 	/*groundMesh->draw(camera, fb);
 	floor->draw(camera, fb);
 	p0->draw(camera, fb);
@@ -244,6 +243,9 @@ void Scene::Render() {
 	phamsterb->draw(camera, fb);
 	tstplane->draw(camera, fb);
 	tstplanebil->draw(camera, fb);*/
+
+	//renderSceneObjectsShadow(camera, fb);
+	//renderSceneObjects(camera, fb);
 
 	//grid
 	drawGrid();
@@ -261,10 +263,11 @@ void Scene::Render() {
 		subfb->redraw();
 	}
 	   	 	
-	fb->fog(0.5f, 2.5f, V3(0.8, 0.8, 1));
-	fb->drawEnvironmentBG(2.5f,camera,tstShadow);
-	tstShadow->setPos(fb->lightEnvironment->lights[0]->position);
+//	fb->fog(0.5f, 2.5f, V3(0.8, 0.8, 1));
+//	fb->drawEnvironmentBG(2.5f,camera,tstShadow);
+//	tstShadow->setPos(fb->lightEnvironment->lights[0]->position);
 	V3 tstPointer = V3(0, 400, 0);
+
 	//tstShadow->getMapValue(tstPointer);
 	//tstShadow->renderBB(camera,fb);
 	//fb->draw3DSegment(camera->pos+camera->forward()*5, V3(0.4f, 0, 0.4f), fb->lightEnvironment->lights[0]->position, V3(0.4f, 0, 0.4f), camera);
@@ -335,9 +338,7 @@ void Scene::RenderGPU() {
 	//	tms[tmi].RenderHW();
 	//}
 	//TODO my own
-	for (int i = 0; i < sceneList->renderables.size(); ++i) {
-
-	}
+	tm1->RenderHW();
 
 	soi->PerFrameDisable();
 	cgi->DisableProfiles();
@@ -552,7 +553,7 @@ void Scene::clampMouse() {
 void Scene::Run() {
 	//RayTrace();
 	while (fpsConrols) {
-		cerr << "r\n";
+		//cerr << "r\n";
 		if (fb->exit) {
 			cerr << "exitrun\n";
 			fpsConrols = false;
@@ -568,6 +569,7 @@ void Scene::Run() {
 		animateScene();
 
 		Render();
+		RenderGPU();
 		Fl::check();
 	}
 }

@@ -53,6 +53,8 @@
 	void drawuv(PPC* ppc, FrameBuffer* fb);
 	void drawScreenspace(PPC* ppc, FrameBuffer* fb);
 	//
+	void RenderHW();
+	//
 	void SetRectangle(V3 O, float rw, float rh);
 	V3 getCenterOfMass();
 	//
