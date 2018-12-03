@@ -81,6 +81,9 @@
     <ClInclude Include="CGInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="scenic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene.cpp">

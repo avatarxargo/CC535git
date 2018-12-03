@@ -54,7 +54,7 @@ public:
 	void visualize(PPC* viewer, FrameBuffer* view, float scale);
 	V3 up();
 	V3 forward();
-	void setGPUPparams();
+	void setGPUParams();
 	M33 getABC() {
 		return abc;
 	}

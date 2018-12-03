@@ -3,6 +3,7 @@
 #include "m33.h"
 #include <stdlib.h>
 #include "shadowmap.h"
+#include "framebuffer.h"
 
 Scene *scene;
 
@@ -103,12 +104,12 @@ Scene::Scene() {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
 	}*/
-	gpufb = new FrameBuffer(w+u0+30, v0, w, h);
+	gpufb = new FrameBuffer(w+u0+30, v0, w, h, this);
 	gpufb->label("GPU Framebuffer");
 	gpufb->bufferMode = GPU;
 	gpufb->default_callback(gpufb, closeEvent);
 
-	fb = new FrameBuffer(u0, v0, w, h);
+	fb = new FrameBuffer(u0, v0, w, h, this);
 	fb->label("SW Framebuffer");
 	fb->bufferMode = SW;
 	fb->default_callback(fb,closeEvent);
@@ -127,7 +128,7 @@ Scene::Scene() {
 	gpufb->show();
 
 	if (vizcamena) {
-		subfb = new FrameBuffer(u0, v0, w, h);
+		subfb = new FrameBuffer(u0, v0, w, h, this);
 		subfb->label("SW Cam 0");
 		subfb->show();
 		subfb->refreshColor(0xFF000000);
@@ -308,7 +309,6 @@ void Scene::Save() {
 
 //Renders the same stuff on GPU
 void Scene::RenderGPU() {
-
 	// if the first time, call per session initialization
 	if (cgi == NULL) {
 		cgi = new CGInterface();
@@ -326,7 +326,7 @@ void Scene::RenderGPU() {
 	//camera->SetIntrinsicsHW();
 	// set extrinsics
 	//camera->SetExtrinsicsHW();
-	camera->setGPUPparams();
+	camera->setGPUParams();
 
 	// per frame initialization
 	cgi->EnableProfiles();
@@ -569,7 +569,9 @@ void Scene::Run() {
 		animateScene();
 
 		Render();
-		RenderGPU();
+		//RenderGPU();
+		fb->redraw();
+		gpufb->redraw();
 		Fl::check();
 	}
 }

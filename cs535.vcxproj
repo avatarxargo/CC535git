@@ -117,6 +117,7 @@
     <ClInclude Include="quat.h" />
     <ClInclude Include="renderable.h" />
     <ClInclude Include="scene.h" />
+    <ClInclude Include="scenic.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="tm.h" />
     <ClInclude Include="v3.h" />

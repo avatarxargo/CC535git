@@ -12,6 +12,7 @@
 #include "LightEnvironment.h"
 #include "material.h"
 #include <vector>
+#include "scenic.h"
 
 namespace ShadowMapNS {
 	class ShadowMap;
@@ -25,6 +26,7 @@ enum FrameBufferMode {
 class FrameBuffer : public Fl_Gl_Window {
 public:
 	unsigned int *pix;
+	Scenic * myscene;
 	FrameBufferMode bufferMode = SW;
 	V3 *pixv;
 	float * zbuffer;
@@ -36,6 +38,7 @@ public:
 	volatile float inx, iny, inz, ini, inj, inu, inp;
 	volatile float inputs[20];
 	volatile bool printCam = false, loadCam = false;
+	FrameBuffer(int u0, int v0, int _w, int _h, Scenic * scene);
 	FrameBuffer(int u0, int v0, int _w, int _h);
 	void draw();
 	void KeyUpHandle(bool down);

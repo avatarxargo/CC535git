@@ -4,7 +4,6 @@
 #include "quat.h"
 #include "renderable.h"
 #include "tm.h"
-#include "framebuffer.h"
 #include "videoSaver.h"
 #include "plane.h"
 #include "lightEnvironment.h"
@@ -16,9 +15,11 @@
 #include <string>
 #include <windows.h>
 #include "sceneList.h"
+#include "scenic.h"
 #include "CGInterface.h"
+#include "framebuffer.h"
 
-class Scene {
+class Scene: public Scenic {
 public:
 	bool fpsConrols = true;
 	bool mouseMode = true;

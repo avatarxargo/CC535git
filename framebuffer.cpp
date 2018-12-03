@@ -1,7 +1,6 @@
 #include "framebuffer.h"
 #include "math.h"
 #include <iostream>
-#include "scene.h"
 #include "v3.h"
 #include <iostream>
 #include "tiffio.h"
@@ -10,6 +9,21 @@
 #define MAXDEPTH 10000.0f
 
 using namespace std;
+
+FrameBuffer::FrameBuffer(int u0, int v0, int _w, int _h, Scenic * myscene)
+	: Fl_Gl_Window(u0, v0, _w, _h, 0) {
+
+	this->myscene = myscene;
+	w = _w;
+	h = _h;
+	pix = new unsigned int[w*h];
+	pixv = new V3[w*h];
+	zbuffer = new float[w*h];
+	stencil = new int[w*h];
+	Light * ambience = new Light(V3(0.2, 0.2, 0.2));
+	lightEnvironment = new LightEnvironment(ambience);
+
+}
 
 FrameBuffer::FrameBuffer(int u0, int v0, int _w, int _h)
 	: Fl_Gl_Window(u0, v0, _w, _h, 0) {
@@ -39,10 +53,14 @@ void FrameBuffer::pix2v3() {
 	}
 }
 
-
 void FrameBuffer::draw() {
 
-	glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, pix);
+	if (bufferMode == GPU) {
+		myscene->RenderGPU();
+	}
+	else {
+		glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, pix);
+	}
 
 }
 
