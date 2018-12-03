@@ -137,7 +137,7 @@ Scene::Scene() {
 	gui->uiw->position(u0, v0 + fb->h + 60);
 
 	fb->refreshColor(0xFF000000);
-	Render();
+	//Render();
 	cerr << "run\n";
 	Run();
 	//Save();

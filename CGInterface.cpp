@@ -11,7 +11,6 @@ using namespace std;
 CGInterface::CGInterface() {};
 
 void CGInterface::PerSessionInit() {
-
   glEnable(GL_DEPTH_TEST);
 
   CGprofile latestVertexProfile = cgGLGetLatestProfile(CG_GL_VERTEX);
@@ -28,10 +27,10 @@ void CGInterface::PerSessionInit() {
   cgGLSetOptimalOptions(latestGeometryProfile);
   CGerror Error = cgGetError();
   if (Error) {
-	  cerr << "CG ERROR: " << cgGetErrorString(Error) << endl;
+	  cerr << "CG ERROR "<<Error<<": " << cgGetErrorString(Error) << endl;
   }
 
-  cout << "Info: Latest GP Profile Supported: " << cgGetProfileString(latestGeometryProfile) << endl;
+  cout << "Info: Latest GP Profile Supported: " << CG_PROFILE_UNKNOWN  << "," << latestGeometryProfile << cgGetProfileString(latestGeometryProfile) << endl;
 
   geometryCGprofile = latestGeometryProfile;
 
