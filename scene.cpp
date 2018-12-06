@@ -19,6 +19,8 @@ void closeEvent() {
 
 Scene::Scene() {
 
+	scene = this;
+
 	gui = new GUI();
 	gui->show();
 
@@ -54,6 +56,17 @@ Scene::Scene() {
 	tm5->LoadBin("geometry/terrain.bin");
 	tm5->rotateAboutAxis(tm5->GetCenter(), V3(1, 0, 0), -90);
 	//
+	gpufloor = new TriangleMesh(600, 600);
+	gpucube1 = new TriangleMesh(2);
+	gpucube1->scale(50);
+	gpucube1->translate(V3(0, 51, -300));
+	gpucube2 = new TriangleMesh(2);
+	gpucube2->scale(50);
+	gpucube2->translate(V3(250, 51, -200));
+	gpucube3 = new TriangleMesh(2);
+	gpucube3->scale(50);
+	gpucube3->translate(V3(-150, 51, -100));
+	//
 	tm1->position(V3(0, 50, -200), 200);
 	tm2->position(V3(0, 50, -350), 200);
 	tm3->position(V3(-200, 50, -50), 350);
@@ -81,6 +94,9 @@ Scene::Scene() {
 	rikako->getDiffuse()->setFilter(BILINEAR);
 	wood1b->getDiffuse()->setFilter(BILINEAR);
 	wood2b->getDiffuse()->setFilter(BILINEAR);
+
+	//load texture into gpu;
+	gputex = rikako->getDiffuse()->load2GPU();
 
 	tm1->setMaterial(hamster);
 	//addRenderable(tm1);
@@ -225,7 +241,11 @@ void Scene::Render() {
 	/*tm1->renderFillTextured(camera, fb, rikako->getDiffuse());
 	tm4->renderFillTextured(camera, fb, rikako->getDiffuse());
 */
-	tm1->renderFillTexturedLit(camera, fb, wood2);
+	//tm1->renderFillTexturedLit(camera, fb, wood2);
+	gpufloor->renderFill(camera, fb);
+	gpucube1->renderFill(camera, fb);
+	gpucube2->renderFill(camera, fb);
+	gpucube3->renderFill(camera, fb);
 	//tm4->renderFillTexturedLit(camera, fb, wood2);
 
 	tm1->getBoundingBox().render(camera, fb);
@@ -319,8 +339,16 @@ void Scene::RenderGPU() {
 
 	// clear the framebuffer
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_CULL_FACE);
 	glClearColor(0.0, 0.0f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glActiveTexture(GL_TEXTURE0);
+	printf("OpenGL version supported by this platform (%s): \n",
+		glGetString(GL_VERSION));
+	glBindTexture(GL_TEXTURE_2D, scene->gputex);
 
 	// set intrinsics
 	//camera->SetIntrinsicsHW();
@@ -338,7 +366,20 @@ void Scene::RenderGPU() {
 	//	tms[tmi].RenderHW();
 	//}
 	//TODO my own
-	tm1->RenderHW();
+	//tm1->RenderHW();
+
+
+	gpumode = V3(0, 0, 0);
+	cgSetParameter3fv(soi->fragmentC0, (float*)&scene->gpumode);
+	gpufloor->RenderHW();
+	gpumode = V3(1, 1, 1);
+	cgSetParameter3fv(soi->fragmentC0, (float*)&scene->gpumode);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	gpucube1->RenderHW();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	gpucube2->RenderHW();
+	gpucube3->RenderHW();
 
 	soi->PerFrameDisable();
 	cgi->DisableProfiles();
@@ -364,6 +405,7 @@ void Scene::drawGrid() {
 
 bool dir = true;
 void Scene::animateScene() {
+	return;
 	tm1->rotateAboutAxis(tm1->GetCenter(), V3(0, 1, 0), 5);
 	if (dir) {
 		tm1->scale(1.01f);

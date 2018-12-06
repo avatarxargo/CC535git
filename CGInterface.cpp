@@ -85,7 +85,7 @@ bool ShaderOneInterface::PerSessionInit(CGInterface *cgi) {
 	// build some parameters by name such that we can set them later...
   vertexModelViewProj = cgGetNamedParameter(vertexProgram, "modelViewProj" );
   geometryModelViewProj = cgGetNamedParameter(geometryProgram, "modelViewProj" );
-  fragmentKa = cgGetNamedParameter(fragmentProgram, "ka");
+  fragmentGPUtex = cgGetNamedParameter(fragmentProgram, "gputexture");
   fragmentC0 = cgGetNamedParameter(fragmentProgram, "C0");
   fragmentC1 = cgGetNamedParameter(fragmentProgram, "C1");
   vertexMorphRadius = cgGetNamedParameter(vertexProgram, "MR");
@@ -106,6 +106,7 @@ void ShaderOneInterface::PerFrameInit() {
     geometryModelViewProj, 
 	  CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_IDENTITY);
 
+  cgSetParameter1i(fragmentGPUtex, 0);
  /*cgSetParameter1f(fragmentKa, scene->ka); //just for an effect with morphing
  AABB aabb = scene->tms[0].GetAABB();
 // cerr << aabb.c0 << endl << aabb.c1 << endl;

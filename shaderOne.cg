@@ -10,10 +10,12 @@ struct VertexDataOutput {
 	float3 normal: TEXCOORD0;
 	float3 vxyz: TEXCOORD1;
 	float3 color : COLOR;
+	float depth;
 };
 
 struct PixelDataOutput {
-	float3 color : COLOR;
+	float4 color : COLOR;
+	float depth : DEPTH;
 };
 
 VertexDataOutput VertexMain(VertexDataInput vdi, 
@@ -31,6 +33,7 @@ VertexDataOutput VertexMain(VertexDataInput vdi,
   ret.normal = vdi.normal;
   ret.vxyz = vdi.vertex.xyz;
   ret.color = vdi.color;
+  ret.depth = ret.projv.z / 1000;
   return ret;
 
 }
@@ -46,20 +49,34 @@ TRIANGLE void GeometryMain(AttribArray<VertexDataOutput> tverts,
 }
 
 
-PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform float ka,
+PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform sampler2D gputexture,
 	uniform float3 C0, uniform float3 C1) {
 
   PixelDataOutput ret;
-  ret.color = pdi.color;
+	float3 cmp = pdi.color - float3(0.5,0.5,0.5);
+	//ret.color.rgb = pdi.color; 
+	ret.color.rgb = tex2D(gputexture, pdi.color.xy);
+  if(C0.x > 0.1) { //cull
+	  if(length(cmp) < 0.6) {
+		ret.color.a = 0;
+		ret.depth = 1000;
+	  } else {
+		ret.color.a = 1; 
+		ret.depth = pdi.depth;
+	  }
+  } else { //don't
+	ret.color.a = 1; 
+	ret.depth = pdi.depth;
+  }
   return ret;
 
 //  float ka = 0.2f;
-  float3 L = float3(0.0f, 0.0f, 0.0f);
-  float3 lv = float3(0.0f, 0.0f, 1.0f);
-  float kd = mul(pdi.normal, lv);
-  kd = (kd < 0.0f) ? 0.0f : kd;
-  float3 mc = float3(1.0f, 0.0f, 0.0f);
-  ret.color.rgb = mc * (ka + (1.0f-ka)*kd);
+ // float3 L = float3(0.0f, 0.0f, 0.0f);
+ // float3 lv = float3(0.0f, 0.0f, 1.0f);
+ // float kd = mul(pdi.normal, lv);
+ // kd = (kd < 0.0f) ? 0.0f : kd;
+//  float3 mc = float3(1.0f, 0.0f, 0.0f);
+//  ret.color.rgb = mc * (ka + (1.0f-ka)*kd);
 
 //  ret.color.rgb = (pdi.normal + float3(1.0f, 1.0f, 1.0f))/2.0f;
 //  ret.color.rgb = float3(1.0f, 0.0f, 0.0f);
@@ -67,10 +84,12 @@ PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform float ka,
 //	ret.color.rgb = float3(0.0f, 0.0f, 0.0f);
 //	ret.color.g = ka;
 	
-	ret.color.rgb = float3(0.0f, 0.0f, 0.0f);
-	ret.color.rgb = (C0 + float3(150.0f, 150.0f, 150.0f)) / 30.0f;
+//	ret.color.rgb = float3(0.0f, 0.0f, 0.0f);
+//	ret.color.rgb = (C0 + float3(150.0f, 150.0f, 150.0f)) / 30.0f;
 
-    return ret;
+//	ret.color.rgba = float4(ret.color.rgb, 0.5);
+
+ //   return ret;
 
 
 	// BILLBOARD REFLECTIONS
