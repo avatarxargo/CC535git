@@ -330,26 +330,6 @@ void TriangleMesh::RayTrace(PPC *ppc, FrameBuffer* fb) {
 	}
 }
 
-TriangleMesh::TriangleMesh(int size) {
-	vertsN = 8;
-	trisN = 12;
-	//V3 normalstmp[] = {V3(1,0,0),V3(0,1,0),V3(0,0,1),V3(-1,0,0),V3(0,-1,0),V3(0,0,-1)};
-	verts = new V3[vertsN]{ V3(1,1,1), V3(1,1,-1), V3(-1,1,-1), V3(-1,1,1), V3(1,-1,1), V3(1,-1,-1), V3(-1,-1,-1), V3(-1,-1,1) };
-	normals = new V3[vertsN]{ V3(1, 1, 1), V3(1, 1, -1), V3(-1, 1, -1), V3(-1, 1, 1), V3(1, -1, 1), V3(1, -1, -1), V3(-1, -1, -1), V3(-1, -1, 1) };
-	tris = new unsigned int[trisN*3]{0,5,1, 0,4,5, 1,6,2, 1,5,6, 2,7,3, 2,6,7, 3,4,0, 3,7,4, 0,1,3, 1,2,3, 4,7,5, 5,7,6};
-	//colors = new V3[vertsN]{ V3(0,1,1), V3(1,0,0),V3(1,1,0),V3(1,1,1),V3(0,1,1),V3(0,1,1),V3(0,1,1),V3(0,1,1) };
-	colors = new V3[vertsN]{ V3(1, 1, 1), V3(1, 1, 0), V3(0, 1, 0), V3(0, 1, 1), V3(1, 0, 1), V3(1, 0, 0), V3(0,0,0), V3(0, 0, 1) };
-}
-
-TriangleMesh::TriangleMesh(int w, int h) {
-	vertsN = 4;
-	trisN = 2;
-	verts = new V3[vertsN]{ V3(w/2,0,h/2), V3(w / 2,0,-h / 2),V3(-w / 2,0,-h / 2),V3(-w / 2,0,h / 2) };
-	normals = new V3[vertsN]{ V3(0,1,0),V3(0,1,0),V3(0,1,0),V3(0,1,0) };
-	tris = new unsigned int[trisN * 3]{ 0,1,3, 3,1,2 };
-	colors = new V3[vertsN]{ V3(0.5,0.5,0.5),V3(0.5,0.5,0.5),V3(0.5,0.5,0.5),V3(0.5,0.5,0.5) };
-}
-
 void TriangleMesh::RenderHW() {
 
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -359,7 +339,8 @@ void TriangleMesh::RenderHW() {
 	glVertexPointer(3, GL_FLOAT, 0, (float*)verts);
 	glColorPointer(3, GL_FLOAT, 0, (float*)colors);
 	glNormalPointer(GL_FLOAT, 0, (float*)normals);
-	
+
+
 	glDrawElements(GL_TRIANGLES, 3 * trisN, GL_UNSIGNED_INT, tris);
 
 	glDisableClientState(GL_COLOR_ARRAY);

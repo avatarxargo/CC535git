@@ -237,6 +237,7 @@ void PPC::visualize(PPC* viewer, FrameBuffer* canvas, FrameBuffer* view) {
 void PPC::setGPUParams() {
 	//intrinsics
 	glViewport(0, 0, w, h);
+	cerr << "cam";
 
 	float zNear = 1.0f;
 	float zFar = 1000.0f;

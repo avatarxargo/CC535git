@@ -20,7 +20,6 @@
 	AABB boundingBox;
 	int vertsN;
 	unsigned int *tris;
-	int uv;
 	float *tcs;
 	int trisN;
 	//
@@ -30,8 +29,6 @@
 	TriangleMesh() : verts(0), vertsN(0), colors(0), tris(0), trisN(0), boundingBox(), currentScale(1){
 		type = REN_TM;
 	};
-	TriangleMesh(int size);
-	TriangleMesh(int w, int h);
 	void LoadBin(char *fname);
 	AABB getBoundingBox();
 	V3 GetCenter();
