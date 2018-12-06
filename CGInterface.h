@@ -32,11 +32,11 @@ class ShaderOneInterface {
   // uniform parameters, i.e parameters that have the same value for all geometry rendered
   CGparameter vertexModelViewProj; // a matrix combining projection and modelview matrices
   CGparameter geometryModelViewProj; // geometry shader
-  CGparameter fragmentKa; // ambient coefficient for fragment shader
-  CGparameter fragmentC0, fragmentC1; // two corners of aabb
+  CGparameter fragmentGPUtex; // texture to be used
   CGparameter vertexMorphRadius, vertexMorphCenter, vertexMorphFraction; // for morphing mesh to sphere
 public:
   ShaderOneInterface() {};
+  CGparameter fragmentC0, fragmentC1; // two corners of aabb
   bool PerSessionInit(CGInterface *cgi); // per session initialization
   void BindPrograms(); // enable geometryProgram, vertexProgram, fragmentProgram
   void PerFrameInit(); // set uniform parameter values, etc.

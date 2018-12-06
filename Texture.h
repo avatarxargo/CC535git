@@ -8,6 +8,7 @@
 #include "tiffio.h"
 #include "v3.h"
 #include <vector>
+#include "CGInterface.h"
 
 enum TexFilter { NEAREST, BILINEAR, TRILINEAR };
 
@@ -42,4 +43,5 @@ public:
 	V3 getColorBilinearTargetedV3(V3* tgt, int ww, int hh, float _u, float _v);
 	V3 getColorTrilinearV3(float u, float v, float depth);
 	void genMipMapV3(int tiers, float maxdepth);
+	GLuint load2GPU();
 };
