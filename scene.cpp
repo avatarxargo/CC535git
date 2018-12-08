@@ -345,9 +345,9 @@ void Scene::RenderGPU() {
 	glClearColor(0.0, 0.0f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glActiveTexture(GL_TEXTURE0);
-	printf("OpenGL version supported by this platform (%s): \n",
-		glGetString(GL_VERSION));
+	//glActiveTexture(GL_TEXTURE0);
+	//printf("OpenGL version supported by this platform (%s): \n",
+	//	glGetString(GL_VERSION));
 	glBindTexture(GL_TEXTURE_2D, scene->gputex);
 
 	// set intrinsics
