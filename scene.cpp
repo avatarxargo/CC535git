@@ -56,8 +56,8 @@ Scene::Scene() {
 	tm5->LoadBin("geometry/terrain.bin");
 	tm5->rotateAboutAxis(tm5->GetCenter(), V3(1, 0, 0), -90);
 	//
-	gpufloor = new TriangleMesh(1000, 1000);
-	gpulight = new TriangleMesh(200, 200);
+	gpufloor = new TriangleMesh(1000, 1000, 1);
+	gpulight = new TriangleMesh(200, 200, -1);
 	gpulight->translate(V3(0, 251, -300));
 	gpucube1 = new TriangleMesh(2);
 	gpucube1->scale(50);
@@ -387,7 +387,7 @@ void Scene::RenderGPU() {
 	gpumode = V3(0, 0, 0);
 	cgSetParameter3fv(soi->fragmentC0, (float*)&scene->gpumode);
 	V3 tmpcam = scene->camera->forward();
-	//cgSetParameter3fv(soi->fragmentC1, (float*)&tmpcam);
+	cgSetParameter3fv(soi->fragmentC1, (float*)&tmpcam);
 	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(1, 1, 1));
 	gpulight->RenderHW();
 	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(0.3,0.3,0.3));

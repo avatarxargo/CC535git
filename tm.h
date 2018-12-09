@@ -31,7 +31,7 @@
 		type = REN_TM;
 	};
 	TriangleMesh(int size);
-	TriangleMesh(int w, int h);
+	TriangleMesh(int w, int h, int normal);
 	void LoadBin(char *fname);
 	AABB getBoundingBox();
 	V3 GetCenter();

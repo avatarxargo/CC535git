@@ -341,11 +341,11 @@ TriangleMesh::TriangleMesh(int size) {
 	colors = new V3[vertsN]{ V3(1, 1, 1), V3(1, 1, 0), V3(0, 1, 0), V3(0, 1, 1), V3(1, 0, 1), V3(1, 0, 0), V3(0,0,0), V3(0, 0, 1) };
 }
 
-TriangleMesh::TriangleMesh(int w, int h) {
+TriangleMesh::TriangleMesh(int w, int h, int normal) {
 	vertsN = 4;
 	trisN = 2;
 	verts = new V3[vertsN]{ V3(w/2,0,h/2), V3(w / 2,0,-h / 2),V3(-w / 2,0,-h / 2),V3(-w / 2,0,h / 2) };
-	normals = new V3[vertsN]{ V3(0,1,0),V3(0,1,0),V3(0,1,0),V3(0,1,0) };
+	normals = new V3[vertsN]{ V3(0,normal,0),V3(0,normal,0),V3(0,normal,0),V3(0,normal,0) };
 	tris = new unsigned int[trisN * 3]{ 0,1,3, 3,1,2 };
 	colors = new V3[vertsN]{ V3(0.5,0.5,0.5),V3(0.5,0.5,0.5),V3(0.5,0.5,0.5),V3(0.5,0.5,0.5) };
 }
