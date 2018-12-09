@@ -88,6 +88,14 @@ bool ShaderOneInterface::PerSessionInit(CGInterface *cgi) {
   fragmentGPUtex = cgGetNamedParameter(fragmentProgram, "gputexture");
   fragmentC0 = cgGetNamedParameter(fragmentProgram, "C0");
   fragmentC1 = cgGetNamedParameter(fragmentProgram, "C1");
+  fragmentColor = cgGetNamedParameter(fragmentProgram, "gpucol");
+  fragmentGPUlightCornerA = cgGetNamedParameter(fragmentProgram, "gpulightA");
+  fragmentGPUlightCornerB = cgGetNamedParameter(fragmentProgram, "gpulightB");
+  fragmentGPUlightCornerC = cgGetNamedParameter(fragmentProgram, "gpulightC");
+  fragmentGPUlightCornerD = cgGetNamedParameter(fragmentProgram, "gpulightD");
+  fragmentGPUcubeA = cgGetNamedParameter(fragmentProgram, "gpucubeA");
+  fragmentGPUcubeB = cgGetNamedParameter(fragmentProgram, "gpucubeB");
+  fragmentGPUcubeC = cgGetNamedParameter(fragmentProgram, "gpucubeC");
   vertexMorphRadius = cgGetNamedParameter(vertexProgram, "MR");
   vertexMorphCenter = cgGetNamedParameter(vertexProgram, "MC");
   vertexMorphFraction = cgGetNamedParameter(vertexProgram, "Mf");

@@ -10,6 +10,7 @@ struct VertexDataOutput {
 	float3 normal: TEXCOORD0;
 	float3 vxyz: TEXCOORD1;
 	float3 color : COLOR;
+	float4 projvme;
 	float depth;
 };
 
@@ -29,6 +30,7 @@ VertexDataOutput VertexMain(VertexDataInput vdi,
   float3 Vp = MC + rdir*MR;
   float3 mvertex = vdi.vertex.xyz + (Vp-vdi.vertex.xyz)*Mf;
   ret.projv = mul(modelViewProj, float4(mvertex, 1.0f));
+  ret.projvme = vdi.vertex;
 
   ret.normal = vdi.normal;
   ret.vxyz = vdi.vertex.xyz;
@@ -48,14 +50,139 @@ TRIANGLE void GeometryMain(AttribArray<VertexDataOutput> tverts,
 
 }
 
+//https://stackoverflow.com/questions/33685433/ray-square-intersection-3d
+//orient(a,b,c,n) =  [(b-a) x (c-a)] . n
+//x: cross product; .: dot product
 
-PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform sampler2D gputexture,
-	uniform float3 C0, uniform float3 C1) {
+float distance(float3 a, float3 b) {
+	float3 tmp = (a-b)*(a-b);
+	return sqrt(tmp.x+tmp.y+tmp.z);
+}
+
+bool rayPlaneX(float3 Rstart, float3 Rdir, float3 Pa, float3 Pd, float3 core, float radius, float3 Pnormal, float3 camera) {
+	// assuming vectors are all normalized
+	//bool backfacing = dot(camera, Pnormal) < 0;
+	//Pnormal = backfacing ? Pnormal : -Pnormal;
+	
+	float denom = dot(Pnormal, Rdir);
+	if (denom > 1e-6) {
+		float3 PR = Pa - Rstart;
+		float t = dot(PR, Pnormal) / denom;
+		if(t >= 0) {
+			float3 candidate = Rstart + t * Rdir;
+			if ((candidate.y > Pd.y && candidate.z > Pd.z) &&
+					(candidate.y < Pa.y && candidate.z < Pa.z)) {
+				return (distance(candidate,core) > radius);		
+			}
+		}
+	}
+	return false;
+}
+
+bool rayPlaneY(float3 Rstart, float3 Rdir, float3 Pa, float3 Pd, float3 core, float radius, float3 Pnormal, float3 camera) {
+	// assuming vectors are all normalized
+	//bool backfacing = dot(camera, Pnormal) < 0;
+	//Pnormal = backfacing ? Pnormal : -Pnormal;
+	
+	float denom = dot(Pnormal, Rdir);
+	if (denom > 1e-6) {
+		float3 PR = Pa - Rstart;
+		float t = dot(PR, Pnormal) / denom;
+		if(t >= 0) {
+			float3 candidate = Rstart + t * Rdir;
+			if ((candidate.x > Pd.x && candidate.z > Pd.z) &&
+					(candidate.x < Pa.x && candidate.z < Pa.z)) {
+				return (distance(candidate,core) > radius);		
+			}
+		}
+	}
+	return false;
+}
+
+bool rayPlaneZ(float3 Rstart, float3 Rdir, float3 Pa, float3 Pd, float3 core, float radius, float3 Pnormal, float3 camera) {
+	// assuming vectors are all normalized
+	//bool backfacing = dot(camera, Pnormal) < 0;
+	//Pnormal = backfacing ? Pnormal : -Pnormal;
+
+	float denom = dot(Pnormal, Rdir);
+	if (denom > 1e-6) {
+		float3 PR = Pa - Rstart;
+		float t = dot(PR, Pnormal) / denom;
+		if(t >= 0) {
+			float3 candidate = Rstart + t * Rdir;
+			if ((candidate.x > Pd.x && candidate.y > Pd.y) &&
+					(candidate.x < Pa.x && candidate.y < Pa.y)) {
+				return (distance(candidate,core) > radius);		
+			}
+		}
+	}
+	return false;
+}
+
+bool intersectCube(float3 pos, float3 cube, float3 light, float3 camera) {
+	float sh = 51;
+	float radius = 61;
+	float3 raydir = normalize(light-pos);
+	//X
+	float3 normal = normalize(float3(cube.x + sh - light.x,0,0));
+	if( rayPlaneX(pos, raydir, cube+float3(sh,sh,sh), cube+float3(sh,-sh,-sh), cube, radius, -normal, camera) ) {
+		return true;
+	}
+	normal = normalize(float3(cube.x - sh - light.x,0,0));
+	if( rayPlaneX(pos, raydir, cube+float3(-sh,sh,sh), cube+float3(-sh,-sh,-sh), cube, radius, -normal, camera) ) {
+		return true;
+	}
+	//Y
+	normal = normalize(float3(0,cube.y + sh - light.y,0));
+	if( rayPlaneY(pos, raydir, cube+float3(sh,sh,sh), cube+float3(-sh,sh,-sh), cube, radius, -normal, camera) ) {
+		return true;
+	}
+	normal = normalize(float3(0,cube.y - sh - light.y,0));
+	if( rayPlaneY(pos, raydir, cube+float3(sh,-sh,sh), cube+float3(-sh,-sh,-sh), cube, radius, -normal, camera) ) {
+		return true;
+	}
+	//Z
+	normal = normalize(float3(0,0,cube.z + sh - light.z));
+	if( rayPlaneZ(pos, raydir, cube+float3(sh,sh,sh), cube+float3(-sh,-sh,sh), cube, radius, -normal, camera) ) {
+		return true;
+	}
+	normal = normalize(float3(0,0,cube.z - sh - light.z));
+	if( rayPlaneZ(pos, raydir, cube+float3(sh,sh,-sh), cube+float3(-sh,-sh,-sh), cube, radius, -normal, camera) ) {
+		return true;
+	}
+	return false;
+}
+
+bool intersectWorld(float3 pos, float3 camera, float3 gpulightA, float3 gpulightB, float3 gpulightC, float3 gpulightD,
+	float3 gpucubeA, float3 gpucubeB, float3 gpucubeC) {
+	return (intersectCube(pos, gpucubeA, gpulightA, camera) ||
+			intersectCube(pos, gpucubeB, gpulightA, camera) ||
+			intersectCube(pos, gpucubeC, gpulightA, camera));
+}
+
+PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform float3 gpucol,
+	uniform float3 C0, uniform float3 C1,
+	uniform float3 gpulightA, uniform float3 gpulightB, uniform float3 gpulightC, uniform float3 gpulightD,
+	uniform float3 gpucubeA, uniform float3 gpucubeB, uniform float3 gpucubeC) {
 
   PixelDataOutput ret;
+	
+	float radius = 800;
+	float dsta = (1 - distance(pdi.projvme.xyz, gpulightA)/radius);
+	float dstb = (1 - distance(pdi.projvme.xyz, gpulightB)/radius);
+	float dstc = (1 - distance(pdi.projvme.xyz, gpulightC)/radius);
+	float dstd = (1 - distance(pdi.projvme.xyz, gpulightD)/radius);
+	float light = max(dsta,max(dstb,max(dstc,dstd)));
+	
+	if(intersectWorld(pdi.projvme.xyz, C1, gpucubeA, gpucubeB, gpucubeC, gpulightA, gpulightB, gpulightC, gpulightD)) {
+		light = 0;
+	}
+	//float3 col = backfacing ? float3(1,0,0) : float3(0,1,0); 
+	ret.color.rgb = gpucol * light; //*pdi.depth;//pdi.color; 
+	//ret.color.rgb = tex2D(gputexture, pdi.color.xy).rgb;
+
+	//cutout:
 	float3 cmp = pdi.color - float3(0.5,0.5,0.5);
-	//ret.color.rgb = pdi.color; 
-	ret.color.rgb = tex2D(gputexture, pdi.color.xy);
   if(C0.x > 0.1) { //cull
 	  if(length(cmp) < 0.6) {
 		ret.color.a = 0;

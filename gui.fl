@@ -2,7 +2,7 @@
 version 1.0304
 header_name {.h}
 code_name {.cxx}
-class GUI {open
+class GUI {open selected
 } {
   decl {\#include "scene.h"} {private local
   }
@@ -23,7 +23,7 @@ class GUI {open
         tooltip {Saves the video under provided name to the mydbg dir.} xywh {95 50 95 35}
       }
       Fl_Input savepath {
-        label {Video name:} selected
+        label {Video name:}
         xywh {95 10 95 35} labeltype SHADOW_LABEL
       }
     }

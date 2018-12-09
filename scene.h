@@ -18,6 +18,7 @@
 #include "scenic.h"
 #include "CGInterface.h"
 #include "framebuffer.h"
+#include "glext.h"
 
 class Scene: public Scenic {
 public:
@@ -29,7 +30,7 @@ public:
 	CGInterface *cgi;
 	ShaderOneInterface *soi;
 	PPC *camera, *cam1, *cam2, *cam3, *vizcam;
-	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5, *gpucube1, *gpucube2, *gpucube3, *gpufloor;
+	TriangleMesh *tm1, *tm2, *tm3, *tm4, *tm5, *gpucube1, *gpucube2, *gpucube3, *gpufloor, *gpulight;
 	Plane *p0, *p1, *p0b, *p1b, *p2, *p2b, *floor, *groundMesh, *phamster, *phamsterb, *tstplane, *tstplanebil;
 	//vector<Renderable*> objects;
 	Material *tiles, *rikako, *yumemi, *mesh, *ground, *hamster, *hamsterBil, *tst, *tstbil, *wood1, *wood2, *wood1b, *wood2b;
@@ -45,7 +46,7 @@ public:
 	void RenderGPU();
 	void drawGrid();
 	void cameraControl();
-	void cameraControlFPS();
+	void cameraControlFPS(FrameBuffer* fbboi);
 	void cameraControlRevolve(V3 ctr);
 	void clampMouse();
 	void cinematicCamera(bool save);

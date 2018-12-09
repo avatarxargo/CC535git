@@ -13,6 +13,7 @@
 #include "material.h"
 #include <vector>
 #include "scenic.h"
+#include "glext.h"
 
 namespace ShadowMapNS {
 	class ShadowMap;

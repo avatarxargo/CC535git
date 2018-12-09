@@ -56,7 +56,9 @@ Scene::Scene() {
 	tm5->LoadBin("geometry/terrain.bin");
 	tm5->rotateAboutAxis(tm5->GetCenter(), V3(1, 0, 0), -90);
 	//
-	gpufloor = new TriangleMesh(600, 600);
+	gpufloor = new TriangleMesh(1000, 1000);
+	gpulight = new TriangleMesh(200, 200);
+	gpulight->translate(V3(0, 251, -300));
 	gpucube1 = new TriangleMesh(2);
 	gpucube1->scale(50);
 	gpucube1->translate(V3(0, 51, -300));
@@ -120,12 +122,12 @@ Scene::Scene() {
 		if(mesh->clampCoordinate(f)<0 || mesh->clampCoordinate(f)>1)
 		cerr << mesh->clampCoordinate(f) << endl;
 	}*/
-	gpufb = new FrameBuffer(w+u0+30, v0, w, h, this);
+	gpufb = new FrameBuffer(u0, v0, w, h, this);
 	gpufb->label("GPU Framebuffer");
 	gpufb->bufferMode = GPU;
 	gpufb->default_callback(gpufb, closeEvent);
 
-	fb = new FrameBuffer(u0, v0, w, h, this);
+	fb = new FrameBuffer(w + u0 + 30, v0, w, h, this);
 	fb->label("SW Framebuffer");
 	fb->bufferMode = SW;
 	fb->default_callback(fb,closeEvent);
@@ -243,6 +245,7 @@ void Scene::Render() {
 */
 	//tm1->renderFillTexturedLit(camera, fb, wood2);
 	gpufloor->renderFill(camera, fb);
+	gpulight->renderFill(camera, fb);
 	gpucube1->renderFill(camera, fb);
 	gpucube2->renderFill(camera, fb);
 	gpucube3->renderFill(camera, fb);
@@ -348,7 +351,9 @@ void Scene::RenderGPU() {
 	//glActiveTexture(GL_TEXTURE0);
 	//printf("OpenGL version supported by this platform (%s): \n",
 	//	glGetString(GL_VERSION));
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, scene->gputex);
+	cgSetParameter1i(soi->fragmentGPUtex, 0);
 
 	// set intrinsics
 	//camera->SetIntrinsicsHW();
@@ -368,17 +373,36 @@ void Scene::RenderGPU() {
 	//TODO my own
 	//tm1->RenderHW();
 
+	//cubes
+	cgSetParameter3fv(soi->fragmentGPUcubeA, (float*)&gpucube1->GetCenter());
+	cgSetParameter3fv(soi->fragmentGPUcubeB, (float*)&gpucube2->GetCenter());
+	cgSetParameter3fv(soi->fragmentGPUcubeC, (float*)&gpucube3->GetCenter());
+	//light
+	cgSetParameter3fv(soi->fragmentGPUlightCornerA, (float*)&gpulight->verts[0]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerB, (float*)&gpulight->verts[1]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerC, (float*)&gpulight->verts[2]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerD, (float*)&gpulight->verts[3]);
+
 
 	gpumode = V3(0, 0, 0);
 	cgSetParameter3fv(soi->fragmentC0, (float*)&scene->gpumode);
+	V3 tmpcam = scene->camera->forward();
+	//cgSetParameter3fv(soi->fragmentC1, (float*)&tmpcam);
+	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(1, 1, 1));
+	gpulight->RenderHW();
+	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(0.3,0.3,0.3));
 	gpufloor->RenderHW();
 	gpumode = V3(1, 1, 1);
 	cgSetParameter3fv(soi->fragmentC0, (float*)&scene->gpumode);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(1,0,0));
 	gpucube1->RenderHW();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(0, 1, 0));
 	gpucube2->RenderHW();
+
+	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(0, 0, 1));
 	gpucube3->RenderHW();
 
 	soi->PerFrameDisable();
@@ -499,7 +523,7 @@ float yspd = 0;
 float jumpspd = 80;
 float gravity = -10;
 bool grounded = true;
-void Scene::cameraControlFPS() {
+void Scene::cameraControlFPS(FrameBuffer* fb) {
 	float spd = 25;
 	float tspd = 1;
 	float zoomspd = 50;
@@ -603,7 +627,7 @@ void Scene::Run() {
 			return;
 		}
 		//move camera
-		cameraControlFPS();
+		cameraControlFPS(gpufb);
 		V3 poss = V3(0, 50, -200);// V3(tm1->GetCenter());// 
 		//cerr << poss << "\n";
 		//cameraControlRevolve(poss);
@@ -636,7 +660,7 @@ void Scene::DBG() {
 	while(true) {
 
 		//move camera
-		cameraControlFPS();
+		cameraControlFPS(gpufb);
 		//animate scene
 		animateScene();
 
