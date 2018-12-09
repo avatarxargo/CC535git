@@ -29,6 +29,7 @@
 	//
 	TriangleMesh() : verts(0), vertsN(0), colors(0), tris(0), trisN(0), boundingBox(), currentScale(1){
 		type = REN_TM;
+		currentScale = 1;
 	};
 	TriangleMesh(int size);
 	TriangleMesh(int w, int h, int normal);
@@ -37,8 +38,10 @@
 	V3 GetCenter();
 	//move 
 	void translate(V3 translation);
+	void translateRelative(V3 translation);
 	//scales from the center.
 	void scale(float _scale);
+	void scaleRelative(float _scale);
 	void scale(float scale, V3 center);
 	//places the center at position and scales the dimensions to scale
 	void position(V3 position, float scale);

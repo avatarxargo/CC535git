@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aabb.h" />
+    <ClInclude Include="areaLight.h" />
     <ClInclude Include="CGInterface.h" />
     <ClInclude Include="sceneList.h" />
     <ClInclude Include="framebuffer.h" />

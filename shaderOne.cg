@@ -11,7 +11,6 @@ struct VertexDataOutput {
 	float3 vxyz: TEXCOORD1;
 	float3 color : COLOR;
 	float4 projvme;
-	float3 normall;
 	float depth;
 };
 
@@ -34,10 +33,9 @@ VertexDataOutput VertexMain(VertexDataInput vdi,
   ret.projvme = vdi.vertex;
   
   ret.normal = vdi.normal;
-  ret.normall = ret.normal;
   ret.vxyz = vdi.vertex.xyz;
   ret.color = vdi.color;
-  ret.depth = ret.projv.z / 1000;
+  ret.depth = ret.projv.z / 10000;
   return ret;
 
 }
@@ -120,21 +118,6 @@ bool rayPlaneZ(float3 Rstart, float3 Rdir, float3 Pa, float3 Pd, float3 core, fl
 
 bool isBackfacing(float3 normal, float3 camera) {
 	return dot(normal, camera) > 0.5;
-	float3 normal2 = float3(0,0,0);
-	if(normal.x > normal.y) {
-		if(normal.x > normal.z) {
-			normal2.x = normal.x;
-		} else {
-			normal2.z = normal.z;
-		}
-	} else {
-		if(normal.y > normal.z) {
-			normal2.y = normal.y;
-		} else {
-			normal2.z = normal.z;		
-		}
-	}
-	return dot(normal2, camera) > 0;
 }
 
 bool intersectCube(float3 pos, float3 cube, float3 light, float3 camera) {
@@ -185,7 +168,7 @@ bool intersectLight(float3 pos, float3 camera, float3 gpucubeA, float3 gpucubeB,
 }
 
 float intersectWorldSmooth(float3 pos, float3 camera, float3 gpucubeA, float3 gpucubeB, float3 gpucubeC, float3 gpulightA, float3 gpulightB, float3 gpulightC, float3 gpulightD) {
-	int steps = 5;
+	int steps = 20;
 	float div = steps * steps;
 	float power = 0;
 	float3 di = (gpulightB-gpulightA)/steps;
@@ -206,16 +189,36 @@ PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform float3 gpucol,
 	uniform float3 gpulightA, uniform float3 gpulightB, uniform float3 gpulightC, uniform float3 gpulightD,
 	uniform float3 gpucubeA, uniform float3 gpucubeB, uniform float3 gpucubeC) {
 
-  PixelDataOutput ret;
+	PixelDataOutput ret;
 	
 	float radius = 800;
-	float dsta = (1 - distance(pdi.projvme.xyz, gpulightA)/radius);
-	float dstb = (1 - distance(pdi.projvme.xyz, gpulightB)/radius);
-	float dstc = (1 - distance(pdi.projvme.xyz, gpulightC)/radius);
-	float dstd = (1 - distance(pdi.projvme.xyz, gpulightD)/radius);
-	float light = max(dsta,max(dstb,max(dstc,dstd)));
 	
-	light *= intersectWorldSmooth(pdi.projvme.xyz, C1, gpucubeA, gpucubeB, gpucubeC, gpulightA, gpulightB, gpulightC, gpulightD);
+	float3 mypos = pdi.projvme.xyz;
+	float light = 1;
+	if(mypos.z < gpulightA.z && mypos.z > gpulightC.z) {
+		if(mypos.x < gpulightA.x && mypos.x > gpulightC.x) {
+			light = 1 - (gpulightA.y-mypos.y)/radius;
+		}
+		else if(mypos.x > gpulightA.x) {
+			light = (1 - sqrt((mypos.x-gpulightA.x)*(mypos.x-gpulightA.x)+(mypos.y-gpulightA.y)*(mypos.y-gpulightA.y))/radius);
+		} else { //if(mypos.x < gpulightC.x) {
+			light = (1 - sqrt((mypos.x-gpulightC.x)*(mypos.x-gpulightC.x)+(mypos.y-gpulightC.y)*(mypos.y-gpulightC.y))/radius);
+		} 
+	} else if(mypos.x < gpulightA.x && mypos.x > gpulightC.x) {
+		if(mypos.z > gpulightA.z) {
+			light = (1 - sqrt((mypos.z-gpulightA.z)*(mypos.z-gpulightA.z)+(mypos.y-gpulightA.y)*(mypos.y-gpulightA.y))/radius);
+		}else { //mypos.z < gpulightB.z
+			light = (1 - sqrt((mypos.z-gpulightB.z)*(mypos.z-gpulightB.z)+(mypos.y-gpulightB.y)*(mypos.y-gpulightB.y))/radius);
+		}
+	} else {
+			float dsta = (1 - distance(pdi.projvme.xyz, gpulightA)/radius);
+			float dstb = (1 - distance(pdi.projvme.xyz, gpulightB)/radius);
+			float dstc = (1 - distance(pdi.projvme.xyz, gpulightC)/radius);
+			float dstd = (1 - distance(pdi.projvme.xyz, gpulightD)/radius);
+			light = max(dsta,max(dstb,max(dstc,dstd)));
+	}
+	
+	light = light * intersectWorldSmooth(pdi.projvme.xyz, C1, gpucubeA, gpucubeB, gpucubeC, gpulightA, gpulightB, gpulightC, gpulightD);
 
 	ret.color.rgb = gpucol * light;
 
@@ -228,7 +231,7 @@ PixelDataOutput FragmentMain(VertexDataOutput pdi, uniform float3 gpucol,
 	 if(C0.x > 0.1) { //cull
 	  if(length(cmp) < 0.6) {
 		ret.color.a = 0;
-		ret.depth = 1000;
+		ret.depth = 10000;
 	  } else {
 		ret.color.a = 1; 
 		ret.depth = pdi.depth;

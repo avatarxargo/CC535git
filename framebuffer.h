@@ -99,4 +99,6 @@ public:
 	void resetInput();
 	bool getPrintCam();
 	bool getLoadCam();
+
+	void pullFromGPU();
 };

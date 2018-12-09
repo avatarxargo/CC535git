@@ -39,6 +39,10 @@ FrameBuffer::FrameBuffer(int u0, int v0, int _w, int _h)
 
 }
 
+void FrameBuffer::pullFromGPU() {
+	glReadPixels(0,0,w,h,GL_RGBA, GL_UNSIGNED_BYTE, pix);
+}
+
 unsigned int* FrameBuffer::getDataPtr() {
 	return pix;
 }

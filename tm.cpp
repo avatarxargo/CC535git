@@ -16,6 +16,7 @@ void TriangleMesh::allocate() {
 	colors = new V3[vertsN];
 	normals = new V3[vertsN];
 	tris = new unsigned int[3 * trisN];
+	currentScale = 1;
 }
 
 void TriangleMesh::rotateAboutAxis(V3 origin, V3 angle, float angled) {
@@ -31,13 +32,29 @@ void TriangleMesh::translate(V3 translation) {
 	}
 }
 
+void TriangleMesh::translateRelative(V3 translation) {
+	V3 tgt = translation - GetCenter();
+	for (int vi = 0; vi < vertsN; vi++) {
+		verts[vi] = verts[vi] + tgt;
+	}
+}
+
 
 void TriangleMesh::scale(float _scale) {
 	currentScale *= _scale;
 	V3 center = GetCenter();
 	for (int vi = 0; vi < vertsN; vi++) {
-		verts[vi] = (verts[vi]-center) * _scale + center;
+		verts[vi] = (verts[vi] - center) * _scale + center;
 	}
+}
+
+void TriangleMesh::scaleRelative(float _scale) {
+	V3 center = GetCenter();
+	for (int vi = 0; vi < vertsN; vi++) {
+		verts[vi] = (verts[vi] - center) / currentScale + center;
+		verts[vi] = (verts[vi] - center) * _scale + center;
+	}
+	currentScale = _scale;
 }
 
 void TriangleMesh::scale(float _scale, V3 center) {
@@ -331,6 +348,7 @@ void TriangleMesh::RayTrace(PPC *ppc, FrameBuffer* fb) {
 }
 
 TriangleMesh::TriangleMesh(int size) {
+	currentScale = 1;
 	vertsN = 8;
 	trisN = 12;
 	//V3 normalstmp[] = {V3(1,0,0),V3(0,1,0),V3(0,0,1),V3(-1,0,0),V3(0,-1,0),V3(0,0,-1)};
@@ -342,6 +360,7 @@ TriangleMesh::TriangleMesh(int size) {
 }
 
 TriangleMesh::TriangleMesh(int w, int h, int normal) {
+	currentScale = 1;
 	vertsN = 4;
 	trisN = 2;
 	verts = new V3[vertsN]{ V3(w/2,0,h/2), V3(w / 2,0,-h / 2),V3(-w / 2,0,-h / 2),V3(-w / 2,0,h / 2) };

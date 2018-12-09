@@ -56,9 +56,8 @@ Scene::Scene() {
 	tm5->LoadBin("geometry/terrain.bin");
 	tm5->rotateAboutAxis(tm5->GetCenter(), V3(1, 0, 0), -90);
 	//
-	gpufloor = new TriangleMesh(1000, 1000, 1);
-	gpulight = new TriangleMesh(200, 200, -1);
-	gpulight->translate(V3(0, 251, -300));
+	gpufloor = new TriangleMesh(2000, 2000, 1);
+	areaLight = new AreaLight(V3(0, 251, -300),200);
 	gpucube1 = new TriangleMesh(2);
 	gpucube1->scale(50);
 	gpucube1->translate(V3(0, 51, -300));
@@ -158,8 +157,8 @@ Scene::Scene() {
 	fb->refreshColor(0xFF000000);
 	//Render();
 	cerr << "run\n";
-	Run();
-	//Save();
+	//Run();
+	Save();
 	cerr << "terminal\n";
 	fb->hide();
 }
@@ -245,7 +244,7 @@ void Scene::Render() {
 */
 	//tm1->renderFillTexturedLit(camera, fb, wood2);
 	gpufloor->renderFill(camera, fb);
-	gpulight->renderFill(camera, fb);
+	areaLight->tm->renderFill(camera, fb);
 	gpucube1->renderFill(camera, fb);
 	gpucube2->renderFill(camera, fb);
 	gpucube3->renderFill(camera, fb);
@@ -307,15 +306,15 @@ void Scene::Render() {
 }
 
 void Scene::Save() {
-	//cinematicCamera(true);
-	//return;
+	cinematicCamera(true);
+	return;
 	cerr << "Encoding video:" << endl;
 	encodeFile(fb); //libx264rgb
 	//videoCapture = Init(1280, 720, 30, 400000);
 	for (int i = 0; i < 30*20; ++i) {
 		V3 poss = V3(0, 50, -200);
 		cameraControlRevolve(poss);
-		Render();
+		//Render();
 		//do the image
 		string filename = "mydbg/img" + std::to_string(i) + ".tif";
 		fb->SaveAsTiff((char*)filename.c_str());
@@ -329,6 +328,8 @@ void Scene::Save() {
 	//videoCapture->xFinish();
 	finishEncodingFile();
 }
+
+float t = 0;
 
 //Renders the same stuff on GPU
 void Scene::RenderGPU() {
@@ -347,13 +348,14 @@ void Scene::RenderGPU() {
 	glDisable(GL_CULL_FACE);
 	glClearColor(0.0, 0.0f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	glDepthFunc(GL_LEQUAL);
+	glDepthRange(100, 10000);
 	//glActiveTexture(GL_TEXTURE0);
 	//printf("OpenGL version supported by this platform (%s): \n",
 	//	glGetString(GL_VERSION));
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, scene->gputex);
-	cgSetParameter1i(soi->fragmentGPUtex, 0);
+	//glEnable(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, scene->gputex);
+	//cgSetParameter1i(soi->fragmentGPUtex, 0);
 
 	// set intrinsics
 	//camera->SetIntrinsicsHW();
@@ -373,15 +375,21 @@ void Scene::RenderGPU() {
 	//TODO my own
 	//tm1->RenderHW();
 
+	areaLight->update(V3(0,-0.1,1),0.99);
+	t += 0.1;
+	gpucube1->translate(V3(cos(t) * 8, 0, sin(t) * 8));
+	gpucube2->translate(V3(cos(t) * 20, 0, sin(t) * 20));
+	gpucube3->translate(V3(cos(t) * 10, 0, sin(t) * 10));
+
 	//cubes
 	cgSetParameter3fv(soi->fragmentGPUcubeA, (float*)&gpucube1->GetCenter());
 	cgSetParameter3fv(soi->fragmentGPUcubeB, (float*)&gpucube2->GetCenter());
 	cgSetParameter3fv(soi->fragmentGPUcubeC, (float*)&gpucube3->GetCenter());
 	//light
-	cgSetParameter3fv(soi->fragmentGPUlightCornerA, (float*)&gpulight->verts[0]);
-	cgSetParameter3fv(soi->fragmentGPUlightCornerB, (float*)&gpulight->verts[1]);
-	cgSetParameter3fv(soi->fragmentGPUlightCornerC, (float*)&gpulight->verts[2]);
-	cgSetParameter3fv(soi->fragmentGPUlightCornerD, (float*)&gpulight->verts[3]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerA, (float*)&areaLight->tm->verts[0]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerB, (float*)&areaLight->tm->verts[1]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerC, (float*)&areaLight->tm->verts[2]);
+	cgSetParameter3fv(soi->fragmentGPUlightCornerD, (float*)&areaLight->tm->verts[3]);
 
 
 	gpumode = V3(0, 0, 0);
@@ -389,7 +397,7 @@ void Scene::RenderGPU() {
 	V3 tmpcam = scene->camera->forward();
 	cgSetParameter3fv(soi->fragmentC1, (float*)&tmpcam);
 	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(1, 1, 1));
-	gpulight->RenderHW();
+	areaLight->tm->RenderHW();
 	cgSetParameter3fv(soi->fragmentColor, (float*)&V3(0.3,0.3,0.3));
 	gpufloor->RenderHW();
 	gpumode = V3(1, 1, 1);
@@ -456,12 +464,12 @@ void Scene::RayTrace() {
 void Scene::cinematicCamera(bool save) {
 	cam1->loadFromFile("mydbg/cam1.txt");
 	cam2->loadFromFile("mydbg/cam2.txt");
-	cam3->loadFromFile("mydbg/cam3.txt");
+	cam3->loadFromFile("mydbg/cam1.txt");
 	if (save) {
 		cerr << "Encoding video:" << endl;
 		encodeFile(fb);
 	}
-	float seconds = 10;
+	float seconds = 20;
 	float fps = 30;
 	int iterations = seconds * fps;
 	float half = iterations / 2.0f;
@@ -472,16 +480,19 @@ void Scene::cinematicCamera(bool save) {
 		else
 			cam1->interpolate(cam2, camera, (i / half));
 
-		animateScene();
+		//animateScene();
 		//cameraControlFPS();
 
-		Render();
+		fb->redraw();
+		gpufb->redraw();
+		//Render();
 		Fl::check();
 		if (save) {
+			fb->pullFromGPU();
 			unsigned int* data = fb->getDataPtr();
 			//do video frame
 			drawFrame(data, i);
-			uint8_t* datauint = (uint8_t*)data;
+			//uint8_t* datauint = (uint8_t*)data;
 		}
 	}
 	if (save)
@@ -634,7 +645,7 @@ void Scene::Run() {
 		//animate scene
 		animateScene();
 
-		Render();
+		//Render();
 		//RenderGPU();
 		fb->redraw();
 		gpufb->redraw();
